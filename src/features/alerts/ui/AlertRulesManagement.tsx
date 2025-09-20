@@ -284,7 +284,6 @@ const AlertRulesManagement: React.FC = () => {
         loading={loading}
         rowKey="id"
         locale={{ emptyText: 'Нет настроенных правил алертов' }}
-        className="bg-gray-800"
       />
 
       {/* Модальное окно создания правила */}

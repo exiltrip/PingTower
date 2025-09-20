@@ -18,7 +18,7 @@ const AlertsPage: React.FC = () => {
       key: 'channels',
       label: (
         <span>
-          <MailOutlined />
+          <MailOutlined className="mr-2" />
           Каналы уведомлений
         </span>
       ),
@@ -32,7 +32,7 @@ const AlertsPage: React.FC = () => {
       key: 'rules',
       label: (
         <span>
-          <BellOutlined />
+          <BellOutlined className="mr-2" />
           Правила алертов
         </span>
       ),
@@ -46,7 +46,7 @@ const AlertsPage: React.FC = () => {
       key: 'daily',
       label: (
         <span>
-          <SettingOutlined />
+          <SettingOutlined className="mr-2" />
           Ежедневные отчеты
         </span>
       ),
@@ -60,16 +60,12 @@ const AlertsPage: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-2">
-          Управление уведомлениями
-        </h1>
-        <p className="text-gray-400">
-          Настройте каналы уведомлений, правила алертов и ежедневные отчеты
-        </p>
-      </div>
-
-      <Card className="bg-gray-800 border-gray-700">
+      <Card className="bg-gray-800 border-gray-700" title="Управление уведомлениями">
+        <div className="mb-6">
+          <p className="text-gray-400 text-sm mb-4">
+            Настройте каналы уведомлений, правила алертов и ежедневные отчеты
+          </p>
+        </div>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}

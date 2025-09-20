@@ -1,16 +1,20 @@
 // Основные статусы check'а
-export enum CheckStatus {
-  UP = 'UP',
-  DOWN = 'DOWN', 
-  DEGRADED = 'DEGRADED'
-}
+export const CheckStatus = {
+  UP: 'UP',
+  DOWN: 'DOWN', 
+  DEGRADED: 'DEGRADED'
+} as const;
+
+export type CheckStatus = typeof CheckStatus[keyof typeof CheckStatus];
 
 // Типы мониторов
-export enum CheckType {
-  HTTP = 'http',
-  TCP = 'tcp',
-  PING = 'ping'
-}
+export const CheckType = {
+  HTTP: 'http',
+  TCP: 'tcp',
+  PING: 'ping'
+} as const;
+
+export type CheckType = typeof CheckType[keyof typeof CheckType];
 
 // Основная модель Check'а (соответствует backend схеме)  
 export interface Check {
