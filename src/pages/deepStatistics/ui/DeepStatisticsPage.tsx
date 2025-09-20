@@ -176,7 +176,7 @@ const DeepStatisticsPage: React.FC = () => {
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={processedHistory}>
                     <XAxis dataKey="createdAt" tickFormatter={(t) => new Date(t).toLocaleTimeString()} />
-                    <YAxis />
+                    <YAxis width={40} />
                     <Tooltip
                         labelFormatter={(t) => new Date(t).toLocaleString()}
                         wrapperStyle={tooltipWrapperStyle}
@@ -209,7 +209,7 @@ const DeepStatisticsPage: React.FC = () => {
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="createdAt" tickFormatter={(t) => new Date(t).toLocaleTimeString()} />
-                    <YAxis domain={[0, 1]} ticks={[0, 1]} />
+                    <YAxis width={40} domain={[0, 1]} ticks={[0, 1]} />
                     <Tooltip
                         labelFormatter={(t) => new Date(t).toLocaleString()}
                         wrapperStyle={tooltipWrapperStyle}

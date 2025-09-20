@@ -1,5 +1,5 @@
 import { publicApi } from "../../../shared/api/publicApi";
-import { RegisterResponse, ApiErrorResponse, RegisterData, LoginData, LoginResponse } from "../models/authData";
+import type { RegisterResponse, ApiErrorResponse, RegisterData, LoginData, LoginResponse } from "../models/authData";
 
 
 export const registerUser = async (data: RegisterData): Promise<RegisterResponse> => {

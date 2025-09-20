@@ -4,7 +4,7 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import { useNotifier } from '../../../hooks/useSnackbar';
 import { loginUser } from '../api/auth';
-import { LoginData, LoginResponse } from '../models/authData';
+import type { LoginData, LoginResponse } from '../models/authData';
 
 const { Title } = Typography;
 
