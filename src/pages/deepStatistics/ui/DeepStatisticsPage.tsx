@@ -145,6 +145,20 @@ const DeepStatisticsPage: React.FC = () => {
       successStrokeColor = `url(#colorSuccess-${check.id})`;
     }
 
+
+    const tooltipWrapperStyle = {
+      backgroundColor: 'rgb(12, 14, 18)',
+      border: '1px solid #25272A',
+      borderRadius: '8px',
+    };
+
+    const tooltipTextStyle = {
+      // backgroundColor: 'rgb(17,19,27)',
+      // border: '1px solid #25272A',
+      // borderRadius: '8px',
+      color: '#d1d5db'
+    };
+
     return (
         <Card
             key={check.id}
@@ -163,7 +177,12 @@ const DeepStatisticsPage: React.FC = () => {
                   <LineChart data={processedHistory}>
                     <XAxis dataKey="createdAt" tickFormatter={(t) => new Date(t).toLocaleTimeString()} />
                     <YAxis />
-                    <Tooltip labelFormatter={(t) => new Date(t).toLocaleString()} />
+                    <Tooltip
+                        labelFormatter={(t) => new Date(t).toLocaleString()}
+                        wrapperStyle={tooltipWrapperStyle}
+                        contentStyle={tooltipWrapperStyle}
+                        labelStyle={tooltipTextStyle}
+                    />
                     <Legend />
                     <Line
                         type="monotone"
@@ -191,7 +210,12 @@ const DeepStatisticsPage: React.FC = () => {
                     </defs>
                     <XAxis dataKey="createdAt" tickFormatter={(t) => new Date(t).toLocaleTimeString()} />
                     <YAxis domain={[0, 1]} ticks={[0, 1]} />
-                    <Tooltip labelFormatter={(t) => new Date(t).toLocaleString()} />
+                    <Tooltip
+                        labelFormatter={(t) => new Date(t).toLocaleString()}
+                        wrapperStyle={tooltipWrapperStyle}
+                        contentStyle={tooltipWrapperStyle}
+                        labelStyle={tooltipTextStyle}
+                    />
                     <Legend />
                     <Line
                         type="stepAfter"
