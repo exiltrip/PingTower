@@ -1,11 +1,14 @@
 import { api } from '../../../shared/api/privateApi';
+
+// Типы API
 import type { Check } from '../../../entities/check';
-import type {
+import type { 
   CreateCheckRequest, 
   UpdateCheckRequest, 
   CreateAlertRuleRequest,
   ChecksQueryParams
 } from '../types/requests';
+// Response types removed as they are not currently used in the API functions
 import { handleApiCall, ValidationError as ChecksValidationError } from '../lib/errors';
 import { validateCreateCheckRequest, validateUpdateCheckRequest } from '../lib/validation';
 

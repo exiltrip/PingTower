@@ -6,9 +6,10 @@ export {
   validateName, 
   validateTarget, 
   validateInterval, 
-  validateConfig,
+  validateConfig
+} from './validation';
 
-} from './validation';export type { ValidationResult,
+export type { 
+  ValidationResult,
   ValidationError as ValidatorValidationError
-
 } from './validation';

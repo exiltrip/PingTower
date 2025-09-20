@@ -14,6 +14,7 @@ export {
   getErrorMessage,
   getErrorDetails,
   validateCreateCheckRequest,
-  validateUpdateCheckRequest,
-  // ValidationResult
+  validateUpdateCheckRequest
 } from './lib';
+
+export type { ValidationResult } from './lib';
