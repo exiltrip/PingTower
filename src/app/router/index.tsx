@@ -3,8 +3,8 @@ import {createBrowserRouter} from "react-router-dom";
 import Loading from "@/shared/ui/Loading";
 
 const HomePage = lazy(() => import("@/pages/home/ui/HomePage"));
-const LoginPage = lazy(() => import("@/pages/login/ui/LoginPage"));
-const RegisterPage = lazy(() => import("@/pages/register/ui/RegisterPage"));
+const LoginPage = lazy(() => import("@/pages/auth/ui/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/auth/ui/RegisterPage"));
 
 export const router = createBrowserRouter([
     {

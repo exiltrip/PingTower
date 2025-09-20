@@ -2,13 +2,38 @@ import React from 'react';
 import { Card, Form, Input, Button, Typography } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
+import { useNotifier } from '../../../hooks/useSnackbar';
+import { loginUser } from '../api/auth';
+import { LoginData, LoginResponse } from '../models/authData';
 
 const { Title } = Typography;
 
 const LoginPage: React.FC = () => {
+  const { notify } = useNotifier();
   const navigate = useNavigate();
-  const onFinish = (values: any) => {
-    console.log("Полученные данные:", values);
+  const onFinish = async (values: LoginData) => {
+    try {
+      const response: LoginResponse = await loginUser(values);
+
+      notify(response.message, true);
+
+      if (response.accessToken) {
+        localStorage.setItem("access_token", response.accessToken);
+        localStorage.setItem("refresh_token", response.refreshToken ?? "");
+      }
+
+      navigate("/");
+    } catch (err: any) {
+      const errorData = err.response?.data || err;
+
+      if (Array.isArray(errorData?.message)) {
+        errorData.message.forEach((msg: string) => notify(msg, false));
+      } else if (typeof errorData?.message === "string") {
+        notify(errorData.message, false);
+      } else {
+        notify('Произошла ошибка', false);
+      }
+    }
   };
 
   return (
@@ -25,7 +50,7 @@ const LoginPage: React.FC = () => {
           requiredMark={false}
         >
           <Form.Item
-            name="username"
+            name="email"
             rules={[
                 { required: true, message: "Укажите email" },
                 { type: "email", message: "Введите корректный email" }

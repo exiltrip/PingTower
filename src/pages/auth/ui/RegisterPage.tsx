@@ -2,14 +2,37 @@ import React from 'react';
 import { Card, Form, Input, Button, Typography } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
+import { registerUser } from '../api/auth';
+import { RegisterData, RegisterResponse } from '../models/authData';
+import { useNotifier } from '../../../hooks/useSnackbar';
+
 
 const { Title } = Typography;
 
 const RegisterPage: React.FC = () => {
+  const { notify } = useNotifier();
   const navigate = useNavigate();
 
-  const onFinish = (values: any) => {
-    console.log("Данные регистрации:", values);
+  const onFinish = async (values: RegisterData) => {
+    try {
+      const response: RegisterResponse = await registerUser(values);
+
+      notify(response.message, true);
+
+      if (response.accessToken) {
+        localStorage.setItem("access_token", response.accessToken);
+        localStorage.setItem("refresh_token", response.refreshToken ?? "");
+      }
+
+      navigate("/"); 
+    } catch (err: any) {
+      const errorData = err.response?.data || err;
+      if (Array.isArray(errorData?.error)) {
+        errorData.error.forEach((msg: string) => notify(msg, false));
+      } else {
+        notify(errorData?.message || 'Произошла ошибка', false);
+      }
+    }
   };
 
   return (
