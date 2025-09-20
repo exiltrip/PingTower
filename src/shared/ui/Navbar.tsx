@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Button, Menu } from "antd";
+import React, {useState} from "react";
+import {Button, Menu} from "antd";
 import {
     DesktopOutlined,
     PieChartOutlined,
@@ -8,8 +8,8 @@ import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
 } from "@ant-design/icons";
-import { useLocation, useNavigate } from "react-router-dom";
-import type { MenuProps } from "antd";
+import {useLocation, useNavigate} from "react-router-dom";
+import type {MenuProps} from "antd";
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -23,10 +23,10 @@ const Navbar = () => {
     };
 
     const items: MenuItem[] = [
-        { key: "/", icon: <DesktopOutlined />, label: "Статистика" },
-        { key: "/statistics_full", icon: <PieChartOutlined />, label: "Подробная Статистика" },
-        { key: "/alerts", icon: <MailOutlined />, label: "Алерты" },
-        { key: "/settings", icon: <SettingOutlined />, label: "Настройки" },
+        {key: "/", icon: <DesktopOutlined/>, label: "Статистика"},
+        {key: "/statistics_full", icon: <PieChartOutlined/>, label: "Подробная Статистика"},
+        {key: "/alerts", icon: <MailOutlined/>, label: "Алерты"},
+        {key: "/settings", icon: <SettingOutlined/>, label: "Настройки"},
     ];
 
     return (
@@ -38,9 +38,9 @@ const Navbar = () => {
                 variant="outlined"
                 color="primary"
                 onClick={toggleCollapsed}
-                style={{ marginBottom: 16, borderRadius: 8, width: "100%" }}
+                style={{marginBottom: 16, borderRadius: 8, width: "100%"}}
             >
-                {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                {collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
             </Button>
             <Menu
                 mode="inline"
