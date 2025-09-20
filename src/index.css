@@ -38,3 +38,12 @@ html, body {
 body {
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
+
+/* Отступы между вкладками алертов */
+.alerts-tabs .ant-tabs-tab {
+    margin-right: 8px !important;
+}
+
+.alerts-tabs .ant-tabs-tab:last-child {
+    margin-right: 0 !important;
+}

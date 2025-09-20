@@ -1,5 +1,6 @@
 import { axiosInstance } from '../../../shared/api/axiosInstance';
 import type { CheckExamples } from '../types/responses';
+import { CheckType } from '../../../entities/check';
 
 /**
  * Получает готовые примеры конфигураций для всех типов checks
@@ -45,7 +46,7 @@ export async function getPingExample(): Promise<any> {
 
 // Локальные шаблоны конфигураций (fallback если API недоступен)
 export const DEFAULT_CONFIGS = {
-  http: {
+  [CheckType.HTTP]: {
     basic: {
       method: 'GET',
       timeoutMs: 5000,
@@ -68,7 +69,7 @@ export const DEFAULT_CONFIGS = {
       degraded_threshold_ms: 4000
     }
   },
-  tcp: {
+  [CheckType.TCP]: {
     basic: {
       port: 80,
       timeoutMs: 5000,
@@ -80,7 +81,7 @@ export const DEFAULT_CONFIGS = {
       degraded_threshold_ms: 3000
     }
   },
-  ping: {
+  [CheckType.PING]: {
     basic: {
       timeoutMs: 3000,
       packetSize: 32,
@@ -97,7 +98,7 @@ export const DEFAULT_CONFIGS = {
 /**
  * Получает локальный шаблон конфигурации
  */
-export function getDefaultConfig(type: 'http' | 'tcp' | 'ping', variant: string = 'basic') {
+export function getDefaultConfig(type: CheckType, variant: string = 'basic') {
   const typeConfigs = DEFAULT_CONFIGS[type];
   return typeConfigs[variant as keyof typeof typeConfigs] || typeConfigs.basic;
 }
@@ -106,7 +107,7 @@ export function getDefaultConfig(type: 'http' | 'tcp' | 'ping', variant: string 
  * Создает готовый к использованию пример check'а
  */
 export function createCheckTemplate(
-  type: 'http' | 'tcp' | 'ping',
+  type: CheckType,
   name: string,
   target: string,
   variant: string = 'basic'
@@ -115,7 +116,7 @@ export function createCheckTemplate(
     name,
     type,
     target,
-    interval: type === 'ping' ? 60 : 300, // ping чаще, остальные реже
+    interval: type === CheckType.PING ? 60 : 300, // ping чаще, остальные реже
     config: getDefaultConfig(type, variant)
   };
 }
@@ -123,9 +124,9 @@ export function createCheckTemplate(
 /**
  * Валидирует target в зависимости от типа check'а
  */
-export function validateTarget(type: 'http' | 'tcp' | 'ping', target: string): boolean {
+export function validateTarget(type: CheckType, target: string): boolean {
   switch (type) {
-    case 'http':
+    case CheckType.HTTP:
       try {
         const url = new URL(target);
         return url.protocol === 'http:' || url.protocol === 'https:';
@@ -133,8 +134,8 @@ export function validateTarget(type: 'http' | 'tcp' | 'ping', target: string): b
         return false;
       }
     
-    case 'tcp':
-    case 'ping':
+    case CheckType.TCP:
+    case CheckType.PING:
       // Проверяем IP адрес или доменное имя
       return isValidIPv4(target) || isValidDomain(target);
     

@@ -15,7 +15,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 colorTextSecondary: '#595959',
                 colorBgContainer: 'rgb(12,14,18)',
                 colorBorder: '#25272A',
-                borderRadius: 24,
+                borderRadius: 8,
                 boxShadow: 'none',
             },
             components: {

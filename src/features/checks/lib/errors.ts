@@ -2,24 +2,32 @@ import { AxiosError } from 'axios';
 import type { ApiError } from '../types/responses';
 
 export class ChecksApiError extends Error {
+  statusCode: number;
+  details?: any;
+
   constructor(
     message: string,
-    public statusCode: number,
-    public details?: any
+    statusCode: number,
+    details?: any
   ) {
     super(message);
     this.name = 'ChecksApiError';
+    this.statusCode = statusCode;
+    this.details = details;
   }
 }
 
 // Ошибка валидации
 export class ValidationError extends ChecksApiError {
+  validationErrors: Array<{ field: string; message: string; value?: any }>;
+
   constructor(
     message: string,
-    public validationErrors: Array<{ field: string; message: string; value?: any }>
+    validationErrors: Array<{ field: string; message: string; value?: any }>
   ) {
     super(message, 400, validationErrors);
     this.name = 'ValidationError';
+    this.validationErrors = validationErrors;
   }
 }
 

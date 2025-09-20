@@ -7,6 +7,9 @@ import LoggedInWrapper from "../../shared/ui/LoggedInWrapper";
 const HomePage = lazy(() => import("@/pages/home/ui/HomePage"));
 const LoginPage = lazy(() => import("@/pages/auth/ui/LoginPage"));
 const RegisterPage = lazy(() => import("@/pages/auth/ui/RegisterPage"));
+const AlertsPage = lazy(() => import("@/pages/alerts/ui/AlertsPage"));
+const SettingsPage = lazy(() => import("@/pages/settings/ui/SettingsPage"));
+const ProfilePage = lazy(() => import("@/pages/profile/ui/ProfilePage"));
 
 export const router = createBrowserRouter([
     {
@@ -41,6 +44,36 @@ export const router = createBrowserRouter([
             <Suspense fallback={<Loading/>}>
                 <LoggedInWrapper>
                     <DeepStatisticsPage/>
+                </LoggedInWrapper>
+            </Suspense>
+        ),
+    },
+    {
+        path: "/alerts",
+        element: (
+            <Suspense fallback={<Loading/>}>
+                <LoggedInWrapper>
+                    <AlertsPage/>
+                </LoggedInWrapper>
+            </Suspense>
+        ),
+    },
+    {
+        path: "/settings",
+        element: (
+            <Suspense fallback={<Loading/>}>
+                <LoggedInWrapper>
+                    <SettingsPage/>
+                </LoggedInWrapper>
+            </Suspense>
+        ),
+    },
+    {
+        path: "/profile",
+        element: (
+            <Suspense fallback={<Loading/>}>
+                <LoggedInWrapper>
+                    <ProfilePage/>
                 </LoggedInWrapper>
             </Suspense>
         ),
