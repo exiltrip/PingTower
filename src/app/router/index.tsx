@@ -1,6 +1,7 @@
 import React, {Suspense, lazy} from "react";
 import {createBrowserRouter} from "react-router-dom";
 import Loading from "@/shared/ui/Loading";
+import DeepStatisticsPage from "../../pages/deepStatistics/ui/DeepStatisticsPage";
 
 const HomePage = lazy(() => import("@/pages/home/ui/HomePage"));
 const LoginPage = lazy(() => import("@/pages/login/ui/LoginPage"));
@@ -28,6 +29,14 @@ export const router = createBrowserRouter([
         element: (
             <Suspense fallback={<Loading/>}>
                 <RegisterPage/>
+            </Suspense>
+        ),
+    },
+    {
+        path: "/statistics_full",
+        element: (
+            <Suspense fallback={<Loading/>}>
+                <DeepStatisticsPage/>
             </Suspense>
         ),
     },
