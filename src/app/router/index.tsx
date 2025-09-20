@@ -4,6 +4,7 @@ import Loading from "@/shared/ui/Loading";
 
 const HomePage = lazy(() => import("@/pages/home/ui/HomePage"));
 const LoginPage = lazy(() => import("@/pages/login/ui/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/register/ui/RegisterPage"));
 
 export const router = createBrowserRouter([
     {
@@ -15,10 +16,18 @@ export const router = createBrowserRouter([
         ),
     },
     {
-        path: "/about",
+        path: "/login",
         element: (
             <Suspense fallback={<Loading/>}>
                 <LoginPage/>
+            </Suspense>
+        ),
+    },
+    {
+        path: "/register",
+        element: (
+            <Suspense fallback={<Loading/>}>
+                <RegisterPage/>
             </Suspense>
         ),
     },
