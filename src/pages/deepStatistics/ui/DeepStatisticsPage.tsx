@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Select, Table, Row, Col, Spin, Form, Input, Button, message, Tooltip as AntdTooltip } from "antd";
+import { Card, Typography, Select, Table, Row, Col, Spin, Form, Input, Button, message, Tooltip as AntdTooltip, Modal } from "antd";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { api } from "@/shared/api/privateApi";
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import Loading from "../../../shared/ui/Loading";
+import LoadingMini from "../../../shared/ui/LoadingMini";
 
 const { Title } = Typography;
+const { confirm } = Modal;
 
 const checkTypeOptions = [
   { value: "http", label: "HTTP/HTTPS", description: "Проверка доступности сайта или API" },
@@ -62,13 +66,44 @@ const DeepStatisticsPage: React.FC = () => {
     setCreating(true);
     try {
       await api.post("/api/v1/checks", values);
-      message.success("Чек успешно создан");
+      message.success("Проверка успешно создана");
       fetchChecks();
     } catch (e) {
       console.error(e);
-      message.error("Ошибка при создании чека");
+      message.error("Ошибка при создании проверки");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeleteCheck = (checkId: number) => {
+    confirm({
+      title: 'Удалить проверку?',
+      content: 'Это действие необратимо и удалит всю историю выполнения.',
+      okText: 'Удалить',
+      okType: 'danger',
+      cancelText: 'Отмена',
+      onOk: async () => {
+        try {
+          await api.delete(`/api/v1/checks/${checkId}`);
+          message.success('Проверка удалена');
+          fetchChecks();
+        } catch (e) {
+          console.error(e);
+          message.error('Ошибка при удалении');
+        }
+      },
+    });
+  };
+
+  const handleUpdateCheck = async (checkId: number, values: any) => {
+    try {
+      await api.put(`/api/v1/checks/${checkId}`, values);
+      message.success('Проверка обновлена');
+      fetchChecks();
+    } catch (e) {
+      console.error(e);
+      message.error('Ошибка при обновлении');
     }
   };
 
@@ -84,31 +119,24 @@ const DeepStatisticsPage: React.FC = () => {
     const COLORS = ["#52c41a", "#f5222d"];
 
     const columns = [
-      {
-        title: "Time",
-        dataIndex: "createdAt",
-        key: "createdAt",
-        render: (t: string) => new Date(t).toLocaleString(),
-      },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-      },
-      {
-        title: "Code",
-        dataIndex: "statusCode",
-        key: "statusCode",
-      },
-      {
-        title: "Latency (ms)",
-        dataIndex: "latencyMs",
-        key: "latencyMs",
-      },
+      { title: "Time", dataIndex: "createdAt", key: "createdAt", render: (t: string) => new Date(t).toLocaleString() },
+      { title: "Status", dataIndex: "status", key: "status" },
+      { title: "Code", dataIndex: "statusCode", key: "statusCode" },
+      { title: "Latency (ms)", dataIndex: "latencyMs", key: "latencyMs" },
     ];
 
     return (
-        <Card key={check.id} title={check.name} style={{ marginBottom: 24 }}>
+        <Card
+            key={check.id}
+            title={check.name}
+            extra={
+              <div className="flex gap-2">
+                <Button type="primary" onClick={() => handleUpdateCheck(check.id, check)}><EditOutlined style={{fontSize: "1rem"}}/></Button>
+                <Button type="primary" danger onClick={() => handleDeleteCheck(check.id)}><DeleteOutlined style={{fontSize: "1rem"}}/></Button>
+              </div>
+            }
+            style={{ marginBottom: 24 }}
+        >
           <Row gutter={24}>
             <Col span={16}>
               <Card size="small" title="Latency (ms) во времени">
@@ -150,10 +178,8 @@ const DeepStatisticsPage: React.FC = () => {
 
   return (
       <div style={{ padding: 24 }}>
-        <Title level={2}>Подробная статистика</Title>
 
-        {/* Блок создания нового чека */}
-        <Card title="Создать новый чек" style={{ marginBottom: 24 }}>
+        <Card title="Создать новую проверку" style={{ marginBottom: 24 }}>
           <Form layout="inline" onFinish={handleCreateCheck}>
             <Form.Item name="name" rules={[{ required: true, message: "Введите имя" }]}>
               <Input placeholder="Имя" />
@@ -185,30 +211,24 @@ const DeepStatisticsPage: React.FC = () => {
         <Card style={{ marginBottom: 24 }}>
           <Select
               style={{ width: 400 }}
-              placeholder="Фильтр чеков"
+              placeholder="Фильтр проверок"
               onChange={(id) => setSelectedCheck(id)}
               value={selectedCheck}
           >
-            <Select.Option key="all" value="all">
-              Все чеки
-            </Select.Option>
+            <Select.Option key="all" value="all">Все проверки</Select.Option>
             {checks.map((check) => (
-                <Select.Option key={check.id} value={check.id}>
-                  {check.name}
-                </Select.Option>
+                <Select.Option key={check.id} value={check.id}>{check.name}</Select.Option>
             ))}
           </Select>
         </Card>
 
         {loading ? (
-            <Spin size="large" />
+            <LoadingMini />
         ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {selectedCheck === "all"
                   ? checks.map((check) => renderCheckCard(check))
-                  : checks
-                      .filter((c) => c.id === selectedCheck)
-                      .map((check) => renderCheckCard(check))}
+                  : checks.filter((c) => c.id === selectedCheck).map((check) => renderCheckCard(check))}
             </div>
         )}
       </div>

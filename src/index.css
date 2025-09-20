@@ -2,4 +2,8 @@
 
 html, body {
     font-family: helvetica, arial, sans-serif;
+    background: #222429;
+}
+.ant-menu-root{
+    border: none !important;
 }
