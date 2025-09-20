@@ -1,0 +1,2347 @@
+openapi: 3.0.0
+paths:
+  /:
+    get:
+      operationId: AppController_getHello
+      summary: Root endpoint
+      description: Welcome message for the PingTower API
+      parameters: []
+      responses:
+        '200':
+          description: API welcome message
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Hello World!
+      tags:
+        - App
+  /health:
+    get:
+      operationId: AppController_healthCheck
+      summary: Health check endpoint
+      description: Returns service health status, uptime, and current timestamp
+      parameters: []
+      responses:
+        '200':
+          description: Service health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    example: '2024-01-15T10:30:00Z'
+                  uptime:
+                    type: number
+                    example: 12345.67
+      tags:
+        - App
+  /profile:
+    get:
+      operationId: AppController_getProfile
+      summary: Get current user profile
+      description: Returns profile information of the authenticated user
+      parameters: []
+      responses:
+        '200':
+          description: User profile data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Profile retrieved successfully
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - App
+      security:
+        - bearer: []
+  /protected:
+    get:
+      operationId: AppController_getProtectedData
+      summary: Get protected data (requires authentication)
+      description: Example endpoint demonstrating protected route access
+      parameters: []
+      responses:
+        '200':
+          description: Protected data with user context
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This is protected data
+                  userId:
+                    type: number
+                    example: 1
+                  email:
+                    type: string
+                    example: user@example.com
+                  timestamp:
+                    type: string
+                    example: '2024-01-15T10:30:00Z'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - App
+      security:
+        - bearer: []
+  /auth/register:
+    post:
+      operationId: AuthController_register
+      summary: Register a new user
+      description: Creates a new user account and returns authentication tokens
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponseDto'
+        '400':
+          description: Invalid input data or validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '409':
+          description: User with this email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Auth
+  /auth/login:
+    post:
+      operationId: AuthController_login
+      summary: Login with email and password
+      description: Authenticates user credentials and returns JWT tokens
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Auth
+  /auth/refresh:
+    post:
+      operationId: AuthController_refresh
+      summary: Refresh access and refresh tokens
+      description: Uses refresh token to generate new access and refresh tokens
+      parameters: []
+      responses:
+        '200':
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponseDto'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Auth
+      security:
+        - bearer: []
+  /auth/logout:
+    post:
+      operationId: AuthController_logout
+      summary: Logout current user
+      description: Invalidates refresh token and logs out the current user
+      parameters: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout successful
+        '401':
+          description: Invalid or missing authentication token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Auth
+      security:
+        - bearer: []
+  /api/v1/checks:
+    post:
+      operationId: ChecksController_create
+      summary: Create a new monitoring check
+      description: >-
+        Creates a monitoring check for HTTP/HTTPS, TCP, or ICMP ping. Supports SSL monitoring, content validation,
+        custom headers, and performance thresholds. Check is automatically scheduled based on interval.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCheckDto'
+      responses:
+        '201':
+          description: Check created successfully with scheduling information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Check'
+        '400':
+          description: Invalid input data or validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+    get:
+      operationId: ChecksController_findAll
+      summary: List all monitoring checks
+      description: Returns all checks owned by the authenticated user with their current status and configuration
+      parameters: []
+      responses:
+        '200':
+          description: Array of user checks with configuration and status information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Check'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+  /api/v1/checks/{id}:
+    get:
+      operationId: ChecksController_findOne
+      summary: Get monitoring check by ID
+      description: Returns detailed information about a specific check including configuration and metadata
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the check
+          schema:
+            example: 1
+            type: number
+      responses:
+        '200':
+          description: Check details with full configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Check'
+        '400':
+          description: Invalid check ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '404':
+          description: Check not found or not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+    put:
+      operationId: ChecksController_update
+      summary: Update monitoring check configuration
+      description: >-
+        Updates check settings such as name, target, interval, or configuration. Changes take effect on the next
+        scheduled execution.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the check to update
+          schema:
+            example: 1
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCheckDto'
+      responses:
+        '200':
+          description: Updated check with new configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Check'
+        '400':
+          description: Invalid input data or check ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '404':
+          description: Check not found or not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+    delete:
+      operationId: ChecksController_remove
+      summary: Delete monitoring check
+      description: Permanently deletes a check and all its execution history. This action cannot be undone.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the check to delete
+          schema:
+            example: 1
+            type: number
+      responses:
+        '204':
+          description: Check successfully deleted (no content returned)
+        '400':
+          description: Invalid check ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '404':
+          description: Check not found or not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+  /api/v1/checks/{id}/history:
+    get:
+      operationId: ChecksController_history
+      summary: Get check execution history
+      description: >-
+        Returns paginated check execution history with status, latency, HTTP codes, SSL certificate info, and error
+        messages. Results ordered by execution time (newest first).
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the check
+          schema:
+            example: 1
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            default: 50
+            minimum: 1
+            maximum: 200
+          description: Maximum number of history items to return (1-200)
+        - name: offset
+          required: false
+          in: query
+          schema:
+            default: 0
+            minimum: 0
+          description: Number of items to skip for pagination
+      responses:
+        '200':
+          description: Paginated check execution history with unified status information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckHistoryResponseDto'
+        '400':
+          description: Invalid check ID or query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '404':
+          description: Check not found or not owned by user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+  /api/v1/checks/{id}/alert-rules:
+    post:
+      operationId: ChecksController_createAlertRule
+      summary: Create alert rule
+      description: >-
+        Creates an alert rule that links a notification channel to a monitoring check. When the check fails or recovers
+        based on the configured conditions, notifications will be sent to the specified channel. Each check-channel pair
+        can only have one rule (duplicates are prevented).
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the monitoring check to attach the rule to
+          schema:
+            example: 1
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRuleDto'
+      responses:
+        '201':
+          description: Alert rule created successfully and linked to the check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertRule'
+        '400':
+          description: Validation failed. Check request body format and field requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication required. Provide valid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '403':
+          description: Access denied. The notification channel does not belong to you
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '404':
+          description: Check not found, channel not found, or you do not own the check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+    get:
+      operationId: ChecksController_getAlertRules
+      summary: List alert rules for check
+      description: >-
+        Retrieves all alert rules configured for a specific monitoring check. Returns rules with complete notification
+        channel information, allowing you to see which channels will receive notifications and under what conditions.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the monitoring check to get rules for
+          schema:
+            example: 1
+            type: integer
+      responses:
+        '200':
+          description: List of alert rules for the check, including notification channel details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlertRule'
+        '401':
+          description: Authentication required. Provide valid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '404':
+          description: Check not found or you do not own this check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Checks
+      security:
+        - bearer: []
+  /api/v1/public/checks/examples:
+    get:
+      operationId: PublicChecksController_getExamples
+      summary: Get configuration examples
+      description: >-
+        Returns configuration examples for all check types. Includes complete configurations for HTTP, TCP, and Ping
+        checks with all available options. No authentication required.
+      parameters: []
+      responses:
+        '200':
+          description: Configuration examples and schemas for all check types
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckExamplesDto'
+      tags:
+        - Public
+  /api/v1/notifications/channels:
+    post:
+      operationId: NotificationsController_createChannel
+      summary: Create notification channel
+      description: >-
+        Creates a new notification channel for the authenticated user. Currently supports webhook channels for sending
+        HTTP POST notifications to external services like Slack, Discord, or custom endpoints.
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChannelDto'
+      responses:
+        '201':
+          description: Notification channel created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationChannel'
+        '400':
+          description: 'Validation failed. Check required fields: name, type, config.url'
+        '401':
+          description: Authentication required. Provide valid JWT token
+      tags:
+        - notifications
+      security:
+        - bearer: []
+    get:
+      operationId: NotificationsController_getChannels
+      summary: List notification channels
+      description: >-
+        Retrieves all notification channels owned by the authenticated user. Returns channels sorted by creation date
+        (newest first).
+      parameters: []
+      responses:
+        '200':
+          description: List of notification channels for the authenticated user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationChannel'
+        '401':
+          description: Authentication required. Provide valid JWT token
+      tags:
+        - notifications
+      security:
+        - bearer: []
+  /api/v1/notifications/channels/{id}:
+    delete:
+      operationId: NotificationsController_deleteChannel
+      summary: Delete notification channel
+      description: Permanently deletes a notification channel and all associated alert rules. Only the channel owner can delete it.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the notification channel to delete
+          schema:
+            example: 1
+            type: integer
+      responses:
+        '204':
+          description: Channel deleted successfully. No content returned.
+        '401':
+          description: Authentication required. Provide valid JWT token
+        '403':
+          description: Access denied. You can only delete channels you own.
+        '404':
+          description: Channel not found or does not exist.
+      tags:
+        - notifications
+      security:
+        - bearer: []
+  /api/v1/notifications/channels/telegram/initiate:
+    post:
+      operationId: NotificationsController_generateTelegramLinkingCode
+      summary: Generate Telegram linking code
+      description: Generates a 6-digit code that can be sent to the Telegram bot to link your account. Code expires in 5 minutes.
+      parameters: []
+      responses:
+        '200':
+          description: Linking code generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  linking_code:
+                    type: string
+                    example: '123456'
+                    description: 6-digit code to send to Telegram bot
+        '401':
+          description: Authentication required. Provide valid JWT token
+      tags:
+        - notifications
+      security:
+        - bearer: []
+  /api/v1/alert-rules/{id}:
+    delete:
+      operationId: AlertRulesController_deleteRule
+      summary: Delete alert rule
+      description: Permanently deletes an alert rule. Only the owner of the associated check can delete the rule.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Unique identifier of the alert rule to delete
+          schema:
+            example: 1
+            type: integer
+      responses:
+        '204':
+          description: Alert rule deleted successfully. No content returned.
+        '401':
+          description: Authentication required. Provide valid JWT token
+        '403':
+          description: Access denied. You can only delete rules for checks you own.
+        '404':
+          description: Alert rule not found or does not exist.
+      tags:
+        - alert-rules
+      security:
+        - bearer: []
+  /admin/clickhouse/backfill:
+    post:
+      operationId: BackfillController_startBackfill
+      parameters: []
+      responses:
+        '201':
+          description: ''
+  /admin/clickhouse/backfill/progress:
+    get:
+      operationId: BackfillController_getBackfillProgress
+      parameters:
+        - name: startDate
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: endDate
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+  /admin/clickhouse/backfill/check/{checkId}:
+    post:
+      operationId: BackfillController_backfillForCheck
+      parameters:
+        - name: checkId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+  /admin/clickhouse/backfill/date-range:
+    post:
+      operationId: BackfillController_backfillForDateRange
+      parameters: []
+      responses:
+        '201':
+          description: ''
+  /api/v1/reports/summary:
+    get:
+      operationId: ReportsController_summary
+      summary: Get aggregated monitoring metrics
+      description: >-
+        Returns comprehensive summary statistics for checks including uptime, response times, incident counts, and
+        status breakdowns. Supports both preset time ranges and custom date periods.
+      parameters:
+        - name: check_id
+          required: false
+          in: query
+          description: Filter by specific check ID. If omitted, aggregates across all user checks
+          schema:
+            example: 1
+            type: number
+        - name: range
+          required: false
+          in: query
+          description: Preset time range (mutually exclusive with startDate/endDate)
+          schema:
+            enum:
+              - 24h
+              - 7d
+              - 30d
+            type: string
+        - name: startDate
+          required: false
+          in: query
+          description: Custom start date (ISO 8601). Must be used together with endDate
+          schema:
+            example: '2024-01-01T00:00:00.000Z'
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: Custom end date (ISO 8601). Must be used together with startDate
+          schema:
+            example: '2024-01-31T23:59:59.000Z'
+            type: string
+      responses:
+        '200':
+          description: Aggregated metrics with uptime percentages, status counts, and performance data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponseDto'
+        '400':
+          description: Invalid query parameters (e.g., invalid date format, conflicting range parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Reports
+      security:
+        - bearer: []
+  /api/v1/reports/incidents:
+    get:
+      operationId: ReportsController_incidents
+      summary: Get list of incidents
+      description: >-
+        Returns a chronological list of all incidents (DOWN periods) with their durations, timestamps, and error
+        details. Incidents are sequences of consecutive DOWN statuses between UP statuses.
+      parameters:
+        - name: check_id
+          required: false
+          in: query
+          description: Filter by specific check ID. If omitted, shows incidents from all user checks
+          schema:
+            example: 1
+            type: number
+        - name: range
+          required: false
+          in: query
+          description: Preset time range (mutually exclusive with startDate/endDate)
+          schema:
+            enum:
+              - 24h
+              - 7d
+              - 30d
+            type: string
+        - name: startDate
+          required: false
+          in: query
+          description: Custom start date (ISO 8601). Must be used together with endDate
+          schema:
+            example: '2024-01-01T00:00:00.000Z'
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: Custom end date (ISO 8601). Must be used together with startDate
+          schema:
+            example: '2024-01-31T23:59:59.000Z'
+            type: string
+        - name: min_duration_s
+          required: false
+          in: query
+          description: Minimum incident duration in seconds to include. Filters out short transient failures
+          schema:
+            minimum: 1
+            example: 60
+            type: number
+      responses:
+        '200':
+          description: List of incidents sorted by check ID and start time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentsListResponseDto'
+        '400':
+          description: Invalid query parameters (e.g., invalid date format, conflicting range parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Reports
+      security:
+        - bearer: []
+  /api/v1/reports/incidents/summary:
+    get:
+      operationId: ReportsController_incidentsSummary
+      summary: Get incidents summary statistics
+      description: >-
+        Returns aggregated incident metrics including total incidents count, downtime duration, MTTR (Mean Time To
+        Recovery), and longest incident duration.
+      parameters:
+        - name: check_id
+          required: false
+          in: query
+          description: Filter by specific check ID. If omitted, aggregates incidents from all user checks
+          schema:
+            example: 1
+            type: number
+        - name: range
+          required: false
+          in: query
+          description: Preset time range (mutually exclusive with startDate/endDate)
+          schema:
+            enum:
+              - 24h
+              - 7d
+              - 30d
+            type: string
+        - name: startDate
+          required: false
+          in: query
+          description: Custom start date (ISO 8601). Must be used together with endDate
+          schema:
+            example: '2024-01-01T00:00:00.000Z'
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: Custom end date (ISO 8601). Must be used together with startDate
+          schema:
+            example: '2024-01-31T23:59:59.000Z'
+            type: string
+        - name: min_duration_s
+          required: false
+          in: query
+          description: Minimum incident duration in seconds to include. Filters out short transient failures
+          schema:
+            minimum: 1
+            example: 60
+            type: number
+      responses:
+        '200':
+          description: Aggregated incident statistics including MTTR and total downtime
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentsSummaryResponseDto'
+        '400':
+          description: Invalid query parameters (e.g., invalid date format, conflicting range parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Authentication token is invalid or missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Reports
+      security:
+        - bearer: []
+  /api/v1/reports/timeseries/latency:
+    get:
+      operationId: TimeseriesController_getLatencyTimeseries
+      summary: Get latency timeseries data
+      description: |2-
+
+              Retrieve latency timeseries data with configurable time steps and percentiles.
+              
+              **Time Steps:**
+              - `1m`: 1-minute aggregates (best for short-term analysis)
+              - `5m`: 5-minute aggregates (good for medium-term analysis)
+              - `1h`: 1-hour aggregates (best for long-term analysis)
+              
+              **Time Ranges:**
+              - Use `range` for predefined periods (1h, 6h, 12h, 1d, 7d, 30d)
+              - Or use `startDate` and `endDate` for custom periods
+              
+              **Percentiles:**
+              - Set `percentiles=true` to include p50, p90, p95 latency data
+              - Disable for faster queries when percentiles are not needed
+            
+      parameters:
+        - name: check_id
+          required: false
+          in: query
+          description: Check ID to filter by specific check
+          schema:
+            example: 123
+            type: number
+        - name: range
+          required: false
+          in: query
+          description: Time range shorthand
+          schema:
+            example: 1d
+            enum:
+              - 1h
+              - 6h
+              - 12h
+              - 1d
+              - 7d
+              - 30d
+            type: string
+        - name: startDate
+          required: false
+          in: query
+          description: Start date (alternative to range)
+          schema:
+            example: '2023-01-01T00:00:00Z'
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: End date (alternative to range)
+          schema:
+            example: '2023-01-02T00:00:00Z'
+            type: string
+        - name: step
+          required: true
+          in: query
+          description: Time step for aggregation
+          schema:
+            example: 1m
+            enum:
+              - 1m
+              - 5m
+              - 1h
+            type: string
+        - name: tz
+          required: false
+          in: query
+          description: Timezone for date calculations
+          schema:
+            default: UTC
+            example: UTC
+            type: string
+        - name: percentiles
+          required: false
+          in: query
+          description: Include percentile calculations (p50, p90, p95)
+          schema:
+            default: true
+            example: true
+            type: boolean
+      responses:
+        '200':
+          description: Latency timeseries data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeseriesLatencyResponseDto'
+        '400':
+          description: Invalid query parameters
+        '401':
+          description: Unauthorized
+      tags:
+        - Timeseries Reports
+      security:
+        - bearer: []
+  /api/v1/reports/timeseries/status:
+    get:
+      operationId: TimeseriesController_getStatusTimeseries
+      summary: Get status timeseries data
+      description: |2-
+
+              Retrieve status timeseries data showing UP/DOWN/DEGRADED counts over time.
+              
+              **Use Cases:**
+              - Uptime monitoring and SLA reporting
+              - Incident timeline visualization
+              - Status distribution analysis
+              
+              **Response includes:**
+              - Count of checks in each status per time period
+              - Calculated uptime percentage per period
+              - Total check count per period
+            
+      parameters:
+        - name: check_id
+          required: false
+          in: query
+          description: Check ID to filter by specific check
+          schema:
+            example: 123
+            type: number
+        - name: range
+          required: false
+          in: query
+          description: Time range shorthand
+          schema:
+            example: 1d
+            enum:
+              - 1h
+              - 6h
+              - 12h
+              - 1d
+              - 7d
+              - 30d
+            type: string
+        - name: startDate
+          required: false
+          in: query
+          description: Start date (alternative to range)
+          schema:
+            example: '2023-01-01T00:00:00Z'
+            type: string
+        - name: endDate
+          required: false
+          in: query
+          description: End date (alternative to range)
+          schema:
+            example: '2023-01-02T00:00:00Z'
+            type: string
+        - name: step
+          required: true
+          in: query
+          description: Time step for aggregation
+          schema:
+            example: 1m
+            enum:
+              - 1m
+              - 5m
+              - 1h
+            type: string
+        - name: tz
+          required: false
+          in: query
+          description: Timezone for date calculations
+          schema:
+            default: UTC
+            example: UTC
+            type: string
+        - name: percentiles
+          required: false
+          in: query
+          description: Include percentile calculations (p50, p90, p95)
+          schema:
+            default: true
+            example: true
+            type: boolean
+      responses:
+        '200':
+          description: Status timeseries data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeseriesStatusResponseDto'
+        '400':
+          description: Invalid query parameters
+        '401':
+          description: Unauthorized
+      tags:
+        - Timeseries Reports
+      security:
+        - bearer: []
+  /api/v1/reports/timeseries/summary:
+    get:
+      operationId: TimeseriesController_getTimeseriesSummary
+      summary: Get aggregated timeseries summary
+      description: |2-
+
+              Get high-level summary statistics for a time period.
+              
+              **Includes:**
+              - Total number of checks performed
+              - Average uptime percentage
+              - Total incidents detected
+              - Average latency across all checks
+            
+      parameters: []
+      responses:
+        '200':
+          description: Timeseries summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalChecks:
+                    type: number
+                    example: 4320
+                  averageUptime:
+                    type: number
+                    example: 99.85
+                  totalIncidents:
+                    type: number
+                    example: 2
+                  averageLatency:
+                    type: number
+                    example: 234.56
+                  timeRange:
+                    type: object
+                    properties:
+                      from:
+                        type: string
+                        example: '2023-01-01T00:00:00Z'
+                      to:
+                        type: string
+                        example: '2023-01-02T00:00:00Z'
+      tags:
+        - Timeseries Reports
+      security:
+        - bearer: []
+  /api/v1/reports/timeseries/health:
+    get:
+      operationId: TimeseriesController_healthCheck
+      summary: Health check for timeseries service
+      description: Check the health of ClickHouse and buffer status
+      parameters: []
+      responses:
+        '200':
+          description: Health check results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clickhouse:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum:
+                          - healthy
+                          - unhealthy
+                      details:
+                        type: object
+                  service:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum:
+                          - healthy
+                      timestamp:
+                        type: string
+      tags:
+        - Timeseries Reports
+      security:
+        - bearer: []
+  /admin/fix-statuses:
+    post:
+      operationId: AdminController_fixStatuses
+      summary: Fix existing check result statuses (Admin Only)
+      description: >-
+        Administrative operation to recalculate and update all check result statuses based on success flags and latency
+        thresholds. This is typically used after migrating data or changing status calculation logic.
+      parameters: []
+      responses:
+        '200':
+          description: Status recalculation completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Status fix completed
+                  updated:
+                    type: number
+                    example: 1542
+                    description: Number of records updated
+                  processed:
+                    type: number
+                    example: 2000
+                    description: Total number of records processed
+        '500':
+          description: Database error or processing failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Admin
+  /admin/reset-databases:
+    post:
+      operationId: AdminController_resetDatabases
+      summary: Complete database reset (Development Only)
+      description: >-
+        DANGEROUS: Completely wipes all data from PostgreSQL, ClickHouse, and Redis. Only works in development mode.
+        Requires confirmation parameter. Cannot be undone.
+      parameters:
+        - name: confirm
+          required: true
+          in: query
+          description: Must be exactly "yes-delete-everything" to proceed
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Database reset completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: All databases have been completely reset
+                  timestamp:
+                    type: string
+                    example: '2024-01-15T10:30:00Z'
+                  environment:
+                    type: string
+                    example: development
+                  details:
+                    type: object
+                    properties:
+                      postgresql:
+                        type: object
+                        properties:
+                          tables_dropped:
+                            type: array
+                            items:
+                              type: string
+                          tables_recreated:
+                            type: number
+                      clickhouse:
+                        type: object
+                        properties:
+                          tables_truncated:
+                            type: array
+                            items:
+                              type: string
+                          rows_deleted:
+                            type: number
+        '400':
+          description: Invalid confirmation or not in development mode
+          content:
+            application/json:
+              schema:
+                type: object
+                examples:
+                  wrongConfirmation:
+                    summary: Wrong confirmation
+                    value:
+                      statusCode: 400
+                      message: 'Invalid confirmation. Must be exactly: yes-delete-everything'
+                      error: Bad Request
+                  productionMode:
+                    summary: Production environment
+                    value:
+                      statusCode: 400
+                      message: Database reset is only available in development mode
+                      error: Bad Request
+        '500':
+          description: Database error during reset operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+      tags:
+        - Admin
+  /webhooks/telegram:
+    post:
+      operationId: TelegramWebhookController_handleTelegramWebhook
+      summary: Telegram webhook handler
+      description: Receives messages from Telegram bot. Used for account linking process.
+      parameters: []
+      responses:
+        '200':
+          description: Webhook processed successfully
+      tags:
+        - webhooks
+info:
+  title: PingTower API
+  description: |-
+    Multi-protocol monitoring and uptime tracking API.
+
+    Supported protocols: HTTP/HTTPS, TCP, ICMP Ping
+    Features: SSL certificate monitoring, JSON content validation, performance thresholds, real-time analytics
+
+    Authentication: Most endpoints require JWT token in Authorization header as Bearer token
+
+    Status values:
+    - UP: Check passed and performing within thresholds
+    - DOWN: Check failed or unreachable
+    - DEGRADED: Check passed but latency exceeds threshold or SSL expires within 30 days
+  version: 1.0.0
+  contact:
+    name: PingTower Support
+    url: https://pingtower.etherveil.rest
+    email: support@etherveil.rest
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+tags:
+  - name: App
+    description: General application endpoints (health check, profile)
+  - name: Auth
+    description: Authentication and user management
+  - name: Public
+    description: Public endpoints (no authentication required)
+  - name: Checks
+    description: Monitoring checks CRUD operations and history
+  - name: Reports
+    description: Analytics and reporting endpoints
+  - name: Admin
+    description: Administrative operations (requires elevated permissions)
+servers:
+  - url: http://localhost:3000
+    description: Development Server
+  - url: https://pingtower.etherveil.rest
+    description: Production Server
+components:
+  securitySchemes:
+    JWT-auth:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+      name: JWT
+      description: Enter JWT token
+      in: header
+  schemas:
+    ErrorResponseDto:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          description: HTTP status code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: Bad Request
+        error:
+          type: object
+          description: Detailed error description or validation errors
+          example:
+            - email must be a valid email
+            - password is required
+        timestamp:
+          type: string
+          description: Timestamp of the error
+          example: '2024-01-15T10:30:00Z'
+        path:
+          type: string
+          description: API path where the error occurred
+          example: /auth/register
+      required:
+        - statusCode
+        - message
+        - error
+        - timestamp
+        - path
+    RegisterDto:
+      type: object
+      properties:
+        email:
+          type: string
+          description: User email address (must be valid email format)
+          example: user@example.com
+          format: email
+        password:
+          type: string
+          description: User password (minimum 6 characters)
+          example: securePassword123
+          minLength: 6
+        firstName:
+          type: string
+          description: User first name
+          example: John
+        lastName:
+          type: string
+          description: User last name
+          example: Doe
+      required:
+        - email
+        - password
+    RegisterResponseDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: User registered successfully
+        data:
+          type: object
+          description: Response data payload
+        meta:
+          type: object
+          description: Additional metadata
+        access_token:
+          type: string
+          description: Authentication tokens
+        refresh_token:
+          type: string
+          description: Refresh token
+      required:
+        - message
+        - access_token
+        - refresh_token
+    LoginDto:
+      type: object
+      properties:
+        email:
+          type: string
+          description: User email address
+          example: user@example.com
+          format: email
+        password:
+          type: string
+          description: User password
+          example: securePassword123
+      required:
+        - email
+        - password
+    LoginResponseDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Success message
+          example: Login successful
+        data:
+          type: object
+          description: Response data payload
+        meta:
+          type: object
+          description: Additional metadata
+        access_token:
+          type: string
+          description: Authentication tokens
+        refresh_token:
+          type: string
+          description: Refresh token
+      required:
+        - message
+        - access_token
+        - refresh_token
+    CheckType:
+      type: string
+      description: Type of check to perform
+      enum:
+        - http
+        - ping
+        - tcp
+    CreateCheckDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Human-readable name for the check
+          example: My Website Health Check
+        type:
+          example: http
+          examples:
+            http:
+              summary: HTTP/HTTPS Check
+              description: Monitor web endpoints, APIs, SSL certificates, and content
+              value: http
+            tcp:
+              summary: TCP Port Check
+              description: Monitor TCP port connectivity (databases, services, etc.)
+              value: tcp
+            ping:
+              summary: ICMP Ping Check
+              description: Monitor network connectivity using ICMP ping
+              value: ping
+          $ref: '#/components/schemas/CheckType'
+        target:
+          type: string
+          description: Target URL, domain, or IP address to monitor
+          examples:
+            httpUrl:
+              summary: HTTPS URL
+              description: Full URL with protocol for HTTP checks
+              value: https://api.example.com/health
+            domain:
+              summary: Domain Name
+              description: Domain name for TCP or Ping checks
+              value: database.example.com
+            ipAddress:
+              summary: IP Address
+              description: IPv4 address for TCP or Ping checks
+              value: 192.168.1.100
+            publicDns:
+              summary: Public DNS
+              description: Public DNS servers for ping monitoring
+              value: 8.8.8.8
+        interval:
+          type: number
+          description: Check interval in seconds (minimum 5, maximum 86400)
+          example: 300
+          minimum: 5
+          maximum: 86400
+        config:
+          type: object
+          description: Additional configuration options (JSON object)
+          examples:
+            http:
+              summary: HTTP Check Configuration
+              value:
+                method: GET
+                timeoutMs: 5000
+                expectedStatus:
+                  - 200
+                  - 201
+                headers:
+                  User-Agent: PingTower/1.0
+                ssl_check_enabled: true
+                content_check:
+                  type: JSON_CONTAINS
+                  key: status
+                  expected_value: ok
+                degraded_threshold_ms: 3000
+            tcp:
+              summary: TCP Check Configuration
+              value:
+                port: 80
+                timeoutMs: 5000
+                degraded_threshold_ms: 2000
+            ping:
+              summary: Ping Check Configuration
+              value:
+                timeoutMs: 5000
+                packetSize: 32
+                degraded_threshold_ms: 1000
+      required:
+        - name
+        - type
+        - target
+        - interval
+    Check:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Check unique identifier
+          example: 1
+        name:
+          type: string
+          description: Human-readable name of the check
+          example: My Website Health Check
+        type:
+          example: http
+          $ref: '#/components/schemas/CheckType'
+        target:
+          type: string
+          description: Target URL or IP address to monitor
+          example: https://example.com
+        interval:
+          type: number
+          description: Check interval in seconds
+          example: 300
+          minimum: 5
+          maximum: 86400
+        config:
+          type: object
+          description: Additional configuration options
+          example:
+            timeout: 5000
+            expectedStatusCode: 200
+        enabled:
+          type: boolean
+          description: Whether the check is enabled and should be executed
+          example: true
+        userId:
+          type: number
+          description: ID of the user who owns this check
+          example: 1
+        createdAt:
+          format: date-time
+          type: string
+          description: Timestamp when the check was created
+          example: '2024-01-15T10:30:00Z'
+        updatedAt:
+          format: date-time
+          type: string
+          description: Timestamp when the check was last updated
+          example: '2024-01-15T10:30:00Z'
+      required:
+        - id
+        - name
+        - type
+        - target
+        - interval
+        - enabled
+        - userId
+        - createdAt
+        - updatedAt
+    UpdateCheckDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Human-readable name for the check
+          example: My Updated Website Check
+        type:
+          example: http
+          $ref: '#/components/schemas/CheckType'
+        target:
+          type: string
+          description: Target URL or IP address to monitor
+          example: https://updated-example.com
+        interval:
+          type: number
+          description: Check interval in seconds (minimum 5, maximum 86400)
+          example: 600
+          minimum: 5
+          maximum: 86400
+        config:
+          type: object
+          description: Additional configuration options (JSON object)
+          examples:
+            http:
+              summary: HTTP Check Configuration
+              value:
+                method: POST
+                timeoutMs: 10000
+                expectedStatus: 200
+                headers:
+                  Content-Type: application/json
+                ssl_check_enabled: true
+                content_check:
+                  type: JSON_CONTAINS
+                  key: data.result
+                  expected_value: success
+                degraded_threshold_ms: 5000
+            tcp:
+              summary: TCP Check Configuration
+              value:
+                port: 443
+                timeoutMs: 8000
+                degraded_threshold_ms: 3000
+            ping:
+              summary: Ping Check Configuration
+              value:
+                timeoutMs: 3000
+                packetSize: 64
+                degraded_threshold_ms: 500
+        enabled:
+          type: boolean
+          description: Whether the check is enabled and should be executed
+          example: true
+    CheckHistoryItemDto:
+      type: object
+      properties:
+        id:
+          type: number
+          example: 1
+          description: Result ID
+        checkId:
+          type: number
+          example: 1
+          description: Check ID
+        status:
+          type: string
+          enum:
+            - UP
+            - DOWN
+            - DEGRADED
+          example: UP
+          description: 'Unified check status: UP (healthy), DOWN (failed), DEGRADED (slow but working)'
+        success:
+          type: boolean
+          example: true
+          description: Legacy success field for backward compatibility
+        statusCode:
+          type: number
+          example: 200
+          nullable: true
+          description: HTTP status code (if applicable)
+        latencyMs:
+          type: number
+          example: 145.5
+          nullable: true
+          description: Response latency in milliseconds
+        message:
+          type: string
+          example: OK
+          nullable: true
+          description: Response message
+        createdAt:
+          format: date-time
+          type: string
+          example: '2024-01-15T10:30:00Z'
+          description: Timestamp of the check execution
+      required:
+        - id
+        - checkId
+        - status
+        - success
+        - statusCode
+        - latencyMs
+        - message
+        - createdAt
+    CheckHistoryResponseDto:
+      type: object
+      properties:
+        data:
+          description: Array of check execution results
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckHistoryItemDto'
+        pagination:
+          type: object
+          properties:
+            total:
+              type: number
+              example: 150
+            limit:
+              type: number
+              example: 50
+            offset:
+              type: number
+              example: 0
+          description: Pagination metadata
+      required:
+        - data
+        - pagination
+    CreateRuleDto:
+      type: object
+      properties:
+        channel_id:
+          type: integer
+          description: ID of the notification channel to send alerts to. Must be a channel owned by the authenticated user.
+          example: 1
+        config:
+          type: object
+          description: Alert rule configuration settings that control when and how notifications are sent.
+          example:
+            notify_on_recovery: true
+            notify_after_failures: 2
+      required:
+        - channel_id
+        - config
+    AlertRule:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Alert rule unique identifier
+          example: 1
+        checkId:
+          type: number
+          description: ID of the check being monitored
+          example: 1
+        channelId:
+          type: number
+          description: ID of the notification channel to use
+          example: 1
+        config:
+          type: object
+          description: Additional rule-specific configuration
+          example: {}
+        notifyOnRecovery:
+          type: boolean
+          description: Whether to send notification when check recovers
+          example: true
+        notifyAfterFailures:
+          type: number
+          description: Send notification only after N consecutive failures
+          example: 1
+          minimum: 1
+        createdAt:
+          format: date-time
+          type: string
+          description: Timestamp when the rule was created
+          example: '2024-01-15T10:30:00Z'
+        updatedAt:
+          format: date-time
+          type: string
+          description: Timestamp when the rule was last updated
+          example: '2024-01-15T10:30:00Z'
+      required:
+        - id
+        - checkId
+        - channelId
+        - notifyOnRecovery
+        - notifyAfterFailures
+        - createdAt
+        - updatedAt
+    CheckExamplesDto:
+      type: object
+      properties:
+        basicHttp:
+          type: object
+          title: Basic HTTP Check
+          description: Simple HTTP health check with status code validation
+          example:
+            name: Website Health Check
+            type: http
+            target: https://api.example.com/health
+            interval: 300
+            config:
+              method: GET
+              timeoutMs: 5000
+              expectedStatus: 200
+              degraded_threshold_ms: 3000
+        advancedHttp:
+          type: object
+          title: Advanced HTTP Check with SSL + Content Validation
+          description: Comprehensive HTTP check with SSL monitoring and JSON validation
+          example:
+            name: API Endpoint Complete Check
+            type: http
+            target: https://api.example.com/v1/status
+            interval: 120
+            config:
+              method: GET
+              timeoutMs: 8000
+              expectedStatus:
+                - 200
+                - 201
+              headers:
+                User-Agent: PingTower/1.0
+                Authorization: Bearer your-api-key
+              ssl_check_enabled: true
+              content_check:
+                type: JSON_CONTAINS
+                key: services.database.status
+                expected_value: online
+              degraded_threshold_ms: 4000
+        tcpCheck:
+          type: object
+          title: TCP Port Check
+          description: TCP connectivity check for databases, services, etc.
+          example:
+            name: Database Connection Check
+            type: tcp
+            target: db.example.com
+            interval: 300
+            config:
+              port: 5432
+              timeoutMs: 5000
+              degraded_threshold_ms: 2000
+        pingCheck:
+          type: object
+          title: ICMP Ping Check
+          description: Network connectivity check using ICMP ping
+          example:
+            name: Server Connectivity
+            type: ping
+            target: 8.8.8.8
+            interval: 60
+            config:
+              timeoutMs: 3000
+              packetSize: 32
+              degraded_threshold_ms: 500
+        multiStatusHttp:
+          type: object
+          title: Multiple Status Codes HTTP
+          description: HTTP check accepting multiple valid status codes
+          example:
+            name: Redirect-Friendly Check
+            type: http
+            target: https://example.com/redirect-endpoint
+            interval: 600
+            config:
+              method: HEAD
+              expectedStatus:
+                - 200
+                - 301
+                - 302
+                - 304
+              timeoutMs: 3000
+        highPerfPing:
+          type: object
+          title: High-Performance Ping
+          description: Low-latency ping for critical infrastructure
+          example:
+            name: Critical Infrastructure Ping
+            type: ping
+            target: 1.1.1.1
+            interval: 30
+            config:
+              timeoutMs: 2000
+              packetSize: 64
+              degraded_threshold_ms: 100
+      required:
+        - basicHttp
+        - advancedHttp
+        - tcpCheck
+        - pingCheck
+        - multiStatusHttp
+        - highPerfPing
+    ChannelType:
+      type: string
+      description: Type of notification channel
+      enum:
+        - webhook
+        - telegram
+    CreateChannelDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Human-readable name for the notification channel. Used to identify the channel in the UI.
+          example: Slack Notifications
+          minLength: 1
+          maxLength: 255
+        type:
+          example: webhook
+          $ref: '#/components/schemas/ChannelType'
+        config:
+          type: object
+          description: Channel-specific configuration object. For webhook channels, must contain a valid URL.
+          example:
+            url: https://hooks.slack.com/services/T12345/B12345/abcdef123456
+      required:
+        - name
+        - type
+        - config
+    NotificationChannel:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Notification channel unique identifier
+          example: 1
+        userId:
+          type: number
+          description: ID of the user who owns this channel
+          example: 1
+        type:
+          example: webhook
+          $ref: '#/components/schemas/ChannelType'
+        name:
+          type: string
+          description: Human-readable name of the channel
+          example: Slack Notifications
+        config:
+          type: object
+          description: Channel-specific configuration
+          example:
+            url: https://hooks.slack.com/services/...
+        createdAt:
+          format: date-time
+          type: string
+          description: Timestamp when the channel was created
+          example: '2024-01-15T10:30:00Z'
+        updatedAt:
+          format: date-time
+          type: string
+          description: Timestamp when the channel was last updated
+          example: '2024-01-15T10:30:00Z'
+      required:
+        - id
+        - userId
+        - type
+        - name
+        - createdAt
+        - updatedAt
+    SummaryMetaDto:
+      type: object
+      properties:
+        userId:
+          type: number
+        checkId:
+          type: number
+          nullable: true
+        from:
+          type: string
+        to:
+          type: string
+      required:
+        - userId
+        - checkId
+        - from
+        - to
+    SummaryMetricsDto:
+      type: object
+      properties:
+        total:
+          type: number
+          description: Total number of check executions
+        success:
+          type: number
+          description: 'Legacy: number of successful checks (for backward compatibility)'
+        failed:
+          type: number
+          description: 'Legacy: number of failed checks (for backward compatibility)'
+        upCount:
+          type: number
+          description: Number of UP (healthy) status checks
+        downCount:
+          type: number
+          description: Number of DOWN (failed) status checks
+        degradedCount:
+          type: number
+          description: Number of DEGRADED (slow but working) status checks
+        avgLatencyMs:
+          type: number
+          nullable: true
+          description: Average response latency in milliseconds
+        incidentsCount:
+          type: number
+          description: Number of incidents detected (UP->DOWN transitions)
+        uptimePercent:
+          type: number
+          description: Uptime percentage (0..100) rounded to 2 decimals
+        totalDowntimeSec:
+          type: number
+          description: Total downtime in seconds across all incidents
+          nullable: true
+          example: 1800
+        mttrSec:
+          type: number
+          description: Mean Time To Recovery (MTTR) in seconds
+          nullable: true
+          example: 600
+      required:
+        - total
+        - success
+        - failed
+        - upCount
+        - downCount
+        - degradedCount
+        - avgLatencyMs
+        - incidentsCount
+        - uptimePercent
+        - totalDowntimeSec
+        - mttrSec
+    SummaryResponseDto:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/SummaryMetaDto'
+        metrics:
+          $ref: '#/components/schemas/SummaryMetricsDto'
+      required:
+        - meta
+        - metrics
+    IncidentsMetaDto:
+      type: object
+      properties:
+        userId:
+          type: number
+          description: User ID that owns these incidents
+        checkId:
+          type: number
+          description: Check ID filter applied (null if all checks)
+          nullable: true
+        from:
+          type: string
+          description: Start of time range queried (ISO 8601)
+        to:
+          type: string
+          description: End of time range queried (ISO 8601)
+        minDurationSec:
+          type: number
+          description: Minimum duration filter applied in seconds (null if no filter)
+          nullable: true
+      required:
+        - userId
+        - checkId
+        - from
+        - to
+        - minDurationSec
+    IncidentDto:
+      type: object
+      properties:
+        checkId:
+          type: number
+          description: ID of the check that experienced this incident
+          example: 1
+        startTs:
+          type: string
+          description: Start timestamp of the incident (ISO 8601)
+          example: '2025-01-15T10:30:00.000Z'
+        endTs:
+          type: string
+          description: End timestamp of the incident (ISO 8601). NULL if incident is ongoing
+          example: '2025-01-15T10:35:00.000Z'
+          nullable: true
+        durationSec:
+          type: number
+          description: Duration of the incident in seconds. NULL if incident is ongoing
+          example: 300
+          nullable: true
+        downSamples:
+          type: number
+          description: Number of DOWN status samples recorded during this incident
+          example: 5
+        firstErrorMessage:
+          type: string
+          description: First error message captured when the incident started
+          example: Connection timeout after 5000ms
+          nullable: true
+      required:
+        - checkId
+        - startTs
+        - endTs
+        - durationSec
+        - downSamples
+        - firstErrorMessage
+    IncidentsListResponseDto:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/IncidentsMetaDto'
+        incidents:
+          description: List of incidents sorted by check ID and start time
+          type: array
+          items:
+            $ref: '#/components/schemas/IncidentDto'
+      required:
+        - meta
+        - incidents
+    IncidentsSummaryDto:
+      type: object
+      properties:
+        totalIncidents:
+          type: number
+          description: Total number of incidents in the time period
+          example: 3
+        totalDowntimeSec:
+          type: number
+          description: Total downtime in seconds across all incidents
+          example: 1800
+        mttrSec:
+          type: number
+          description: >-
+            Mean Time To Recovery (MTTR) in seconds. Average duration of resolved incidents. NULL if no incidents were
+            resolved
+          example: 600
+          nullable: true
+        longestIncidentSec:
+          type: number
+          description: Duration of the longest incident in seconds
+          example: 1200
+      required:
+        - totalIncidents
+        - totalDowntimeSec
+        - mttrSec
+        - longestIncidentSec
+    IncidentsSummaryResponseDto:
+      type: object
+      properties:
+        meta:
+          $ref: '#/components/schemas/IncidentsMetaDto'
+        summary:
+          $ref: '#/components/schemas/IncidentsSummaryDto'
+      required:
+        - meta
+        - summary
+    LatencyTimeseriesPointDto:
+      type: object
+      properties:
+        ts:
+          type: string
+          description: Timestamp of the data point
+          example: '2023-01-01T12:00:00Z'
+        count:
+          type: number
+          description: Total count of checks in this time period
+          example: 120
+        up:
+          type: number
+          description: Number of UP status checks
+          example: 115
+        down:
+          type: number
+          description: Number of DOWN status checks
+          example: 3
+        degraded:
+          type: number
+          description: Number of DEGRADED status checks
+          example: 2
+        avgLatency:
+          type: number
+          description: Average latency in milliseconds
+          example: 245.5
+          nullable: true
+        p50:
+          type: number
+          description: 50th percentile latency
+          example: 230.2
+          nullable: true
+        p90:
+          type: number
+          description: 90th percentile latency
+          example: 350.8
+          nullable: true
+        p95:
+          type: number
+          description: 95th percentile latency
+          example: 425.1
+          nullable: true
+      required:
+        - ts
+        - count
+        - up
+        - down
+        - degraded
+        - avgLatency
+    TimeseriesLatencyResponseDto:
+      type: object
+      properties:
+        data:
+          description: Array of latency timeseries data points
+          type: array
+          items:
+            $ref: '#/components/schemas/LatencyTimeseriesPointDto'
+        meta:
+          type: object
+          description: Query metadata
+      required:
+        - data
+        - meta
+    StatusTimeseriesPointDto:
+      type: object
+      properties:
+        ts:
+          type: string
+          description: Timestamp of the data point
+          example: '2023-01-01T12:00:00Z'
+        upCount:
+          type: number
+          description: Number of UP status checks
+          example: 115
+        downCount:
+          type: number
+          description: Number of DOWN status checks
+          example: 3
+        degradedCount:
+          type: number
+          description: Number of DEGRADED status checks
+          example: 2
+        total:
+          type: number
+          description: Total count of checks in this time period
+          example: 120
+        uptimePercent:
+          type: number
+          description: Uptime percentage for this period
+          example: 95.83
+      required:
+        - ts
+        - upCount
+        - downCount
+        - degradedCount
+        - total
+        - uptimePercent
+    TimeseriesStatusResponseDto:
+      type: object
+      properties:
+        data:
+          description: Array of status timeseries data points
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusTimeseriesPointDto'
+        meta:
+          type: object
+          description: Query metadata
+      required:
+        - data
+        - meta
