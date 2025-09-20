@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
+    <div className="flex h-screen items-center justify-center ">
       <Card className="w-full max-w-md shadow-xl rounded-2xl">
         <div className="text-center mb-6">
           <Title level={3}>PingTower</Title>

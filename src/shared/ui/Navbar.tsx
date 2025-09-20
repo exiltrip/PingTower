@@ -46,7 +46,6 @@ const Navbar = () => {
                 mode="inline"
                 inlineCollapsed={collapsed}
                 items={items}
-                // ставим активный ключ в зависимости от текущего pathname
                 selectedKeys={[location.pathname]}
                 onClick={(e) => navigate(e.key)} // переход по клику
             />

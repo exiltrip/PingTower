@@ -21,11 +21,11 @@ const LoggedInWrapper = ({ children }: any) => {
     }, []);
 
     return (
-        <div className="w-screen flex">
+        <div className="w-screen flex ">
             <Navbar />
             <div
                 className=" transition-all duration-30"
-                style={{ marginLeft: navbarWidth, width: `calc(100% - ${navbarWidth}px)` }}
+                style={{ marginLeft: navbarWidth, width: `calc(100% - ${navbarWidth+8}px)` }}
             >
                 {children}
             </div>

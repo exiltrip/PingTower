@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Select, Table, Row, Col, Spin, Form, Input, Button, message, Tooltip as AntdTooltip, Modal } from "antd";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { Card, Select, Table, Row, Col, Form, Input, Button, message, Tooltip as AntdTooltip, Modal } from "antd";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { api } from "@/shared/api/privateApi";
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import Loading from "../../../shared/ui/Loading";
 import LoadingMini from "../../../shared/ui/LoadingMini";
 
-const { Title } = Typography;
-const { confirm } = Modal;
 
 const checkTypeOptions = [
   { value: "http", label: "HTTP/HTTPS", description: "Проверка доступности сайта или API" },
@@ -21,6 +18,9 @@ const DeepStatisticsPage: React.FC = () => {
   const [historyMap, setHistoryMap] = useState<Record<number, any[]>>({});
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingCheck, setEditingCheck] = useState<any | null>(null);
+  const [editForm] = Form.useForm();
 
   const fetchChecks = async () => {
     try {
@@ -77,7 +77,7 @@ const DeepStatisticsPage: React.FC = () => {
   };
 
   const handleDeleteCheck = (checkId: number) => {
-    confirm({
+    Modal.confirm({
       title: 'Удалить проверку?',
       content: 'Это действие необратимо и удалит всю историю выполнения.',
       okText: 'Удалить',
@@ -96,10 +96,18 @@ const DeepStatisticsPage: React.FC = () => {
     });
   };
 
-  const handleUpdateCheck = async (checkId: number, values: any) => {
+  const openEditModal = (check: any) => {
+    setEditingCheck(check);
+    editForm.setFieldsValue(check);
+    setIsEditModalVisible(true);
+  };
+
+  const handleUpdateCheck = async (values: any) => {
+    if (!editingCheck) return;
     try {
-      await api.put(`/api/v1/checks/${checkId}`, values);
+      await api.put(`/api/v1/checks/${editingCheck.id}`, values);
       message.success('Проверка обновлена');
+      setIsEditModalVisible(false);
       fetchChecks();
     } catch (e) {
       console.error(e);
@@ -109,14 +117,6 @@ const DeepStatisticsPage: React.FC = () => {
 
   const renderCheckCard = (check: any) => {
     const history = historyMap[check.id] || [];
-    const successCount = history.filter((h) => h.success).length;
-    const failCount = history.length - successCount;
-
-    const pieData = [
-      { name: "Success", value: successCount },
-      { name: "Fail", value: failCount },
-    ];
-    const COLORS = ["#52c41a", "#f5222d"];
 
     const columns = [
       { title: "Time", dataIndex: "createdAt", key: "createdAt", render: (t: string) => new Date(t).toLocaleString() },
@@ -125,45 +125,84 @@ const DeepStatisticsPage: React.FC = () => {
       { title: "Latency (ms)", dataIndex: "latencyMs", key: "latencyMs" },
     ];
 
+    const processedHistory = history.map(h => ({
+      ...h,
+      successRate: h.success ? 1 : 0,
+    })).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    const allSuccess = processedHistory.length > 0 && processedHistory.every(h => h.successRate === 1);
+    const allFail = processedHistory.length > 0 && processedHistory.every(h => h.successRate === 0);
+
+    let successStrokeColor: string;
+    const solidSuccessColor = "#98d8ad";
+    const solidFailColor = "#ff8c8c";
+
+    if (allSuccess) {
+      successStrokeColor = solidSuccessColor;
+    } else if (allFail) {
+      successStrokeColor = solidFailColor;
+    } else {
+      successStrokeColor = `url(#colorSuccess-${check.id})`;
+    }
+
     return (
         <Card
             key={check.id}
             title={check.name}
             extra={
               <div className="flex gap-2">
-                <Button type="primary" onClick={() => handleUpdateCheck(check.id, check)}><EditOutlined style={{fontSize: "1rem"}}/></Button>
+                <Button type="primary" onClick={() => openEditModal(check)}><EditOutlined style={{fontSize: "1rem"}}/></Button>
                 <Button type="primary" danger onClick={() => handleDeleteCheck(check.id)}><DeleteOutlined style={{fontSize: "1rem"}}/></Button>
               </div>
             }
-            style={{ marginBottom: 24 }}
         >
           <Row gutter={24}>
-            <Col span={16}>
-              <Card size="small" title="Latency (ms) во времени">
+            <Col span={12}>
+              <Card size="small" title="Latency (ms)">
                 <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={history}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                  <LineChart data={processedHistory}>
                     <XAxis dataKey="createdAt" tickFormatter={(t) => new Date(t).toLocaleTimeString()} />
                     <YAxis />
                     <Tooltip labelFormatter={(t) => new Date(t).toLocaleString()} />
                     <Legend />
-                    <Line type="monotone" dataKey="latencyMs" stroke="#1890ff" dot={false} name="Latency" />
+                    <Line
+                        type="monotone"
+                        dataKey="latencyMs"
+                        stroke={"#56B3F4"}
+                        strokeWidth={3}
+                        dot={{r: 1}}
+                        activeDot={{ r: 2 }}
+                        name="Latency"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
             </Col>
 
-            <Col span={8}>
-              <Card size="small" title="Успешность">
+            <Col span={12}>
+              <Card size="small" title="Успешность (1 - Success, 0 - Fail)">
                 <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label>
-                      {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                  <LineChart data={processedHistory}>
+                    <defs>
+                      <linearGradient id={`colorSuccess-${check.id}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ff8c8c" stopOpacity={0.9}/>
+                        <stop offset="95%" stopColor="#98d8ad" stopOpacity={0.9}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="createdAt" tickFormatter={(t) => new Date(t).toLocaleTimeString()} />
+                    <YAxis domain={[0, 1]} ticks={[0, 1]} />
+                    <Tooltip labelFormatter={(t) => new Date(t).toLocaleString()} />
+                    <Legend />
+                    <Line
+                        type="stepAfter"
+                        dataKey="successRate"
+                        stroke={successStrokeColor}
+                        strokeWidth={3}
+                        dot={{ r: 3 }}
+                        activeDot={{ r: 6 }}
+                        name="Success Rate"
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </Card>
             </Col>
@@ -207,7 +246,6 @@ const DeepStatisticsPage: React.FC = () => {
           </Form>
         </Card>
 
-        {/* Фильтр чеков */}
         <Card style={{ marginBottom: 24 }}>
           <Select
               style={{ width: 400 }}
@@ -225,12 +263,50 @@ const DeepStatisticsPage: React.FC = () => {
         {loading ? (
             <LoadingMini />
         ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 lg:grid-cols-2 ${selectedCheck !== "all" && "!grid-cols-1"} gap-6`}>
               {selectedCheck === "all"
                   ? checks.map((check) => renderCheckCard(check))
                   : checks.filter((c) => c.id === selectedCheck).map((check) => renderCheckCard(check))}
             </div>
         )}
+
+        <Modal
+            title="Редактировать проверку"
+            open={isEditModalVisible}
+            onCancel={() => setIsEditModalVisible(false)}
+            footer={null}
+        >
+          <Form
+              form={editForm}
+              layout="vertical"
+              onFinish={handleUpdateCheck}
+          >
+            <Form.Item name="name" label="Имя" rules={[{ required: true, message: "Введите имя" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="type" label="Тип проверки" rules={[{ required: true, message: "Выберите тип" }]}>
+              <Select>
+                {checkTypeOptions.map((opt) => (
+                    <Select.Option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item name="target" label="Target (URL/host)" rules={[{ required: true, message: "Введите target" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="interval" label="Интервал (сек)">
+              <Input type="number" />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="w-full">
+                Обновить
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+
       </div>
   );
 };

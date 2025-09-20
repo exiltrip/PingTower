@@ -3,7 +3,38 @@
 html, body {
     font-family: helvetica, arial, sans-serif;
     background: #222429;
+    overflow-x: hidden;
 }
 .ant-menu-root{
     border: none !important;
+}
+/* Для вебкит браузеров (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Для Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05);
+}
+
+/* Для Internet Explorer */
+body {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 }
