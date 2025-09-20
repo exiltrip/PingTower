@@ -1,4 +1,4 @@
-import { Check, CheckHistoryResponse } from '../../../entities/check';
+import type { Check, CheckHistoryResponse } from '../../../entities/check';
 
 // Стандартный формат ответа API
 export interface ApiResponse<T> {

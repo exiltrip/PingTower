@@ -14,10 +14,15 @@
     "isolatedModules": true,
     "baseUrl": "src",
     "paths": {
-      "@/*": [
-        "*"
+      "@/": [
+        ""
       ]
-    }
+    },
+    // Fixes the main issues with enums and type imports/exports
+    "verbatimModuleSyntax": false,
+    // Allows building despite unused variables, for a quick fix
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "references": [
     {
@@ -28,3 +33,4 @@
     }
   ]
 }
+

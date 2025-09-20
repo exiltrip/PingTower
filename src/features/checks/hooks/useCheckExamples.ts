@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CheckExamples } from '../types/responses';
+import type { CheckExamples } from '../types/responses';
 import { getCheckExamples, createCheckTemplate, DEFAULT_CONFIGS } from '../api/examples';
 import { CheckType } from '../../../entities/check';
 import { getErrorMessage } from '../lib/errors';

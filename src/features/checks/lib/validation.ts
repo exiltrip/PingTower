@@ -1,5 +1,6 @@
-import { CheckType, CheckConfig, HttpConfig, TcpConfig, PingConfig } from '../../../entities/check';
-import { CreateCheckRequest, UpdateCheckRequest } from '../types/requests';
+import type { CheckConfig, HttpConfig, TcpConfig, PingConfig } from '../../../entities/check';
+import  {CheckType} from '../../../entities/check';
+import type { CreateCheckRequest, UpdateCheckRequest } from '../types/requests';
 
 // Результат валидации
 export interface ValidationResult {

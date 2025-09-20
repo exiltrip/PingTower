@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { CheckHistoryResponse, CheckHistoryItem } from '../../../entities/check';
+import type { CheckHistoryItem } from '../../../entities/check';
 import { getCheckHistory, getRecentHistory, getCheckStats, getLastCheckStatus } from '../api/history';
-import { GetHistoryParams } from '../types/requests';
+import type { GetHistoryParams } from '../types/requests';
 import { getErrorMessage } from '../lib/errors';
 
 export interface UseCheckHistoryReturn {

@@ -1,7 +1,6 @@
 import { AxiosError } from 'axios';
-import { ApiError, ValidationErrorResponse } from '../types/responses';
+import type { ApiError } from '../types/responses';
 
-// Базовый класс ошибки API
 export class ChecksApiError extends Error {
   constructor(
     message: string,

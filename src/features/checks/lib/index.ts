@@ -7,6 +7,8 @@ export {
   validateTarget, 
   validateInterval, 
   validateConfig,
-  ValidationResult,
+
+} from './validation';export type { ValidationResult,
   ValidationError as ValidatorValidationError
+
 } from './validation';

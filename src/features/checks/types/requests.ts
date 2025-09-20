@@ -1,6 +1,6 @@
-import { CheckType, CheckConfig } from '../../../entities/check';
+import type { CheckConfig } from '../../../entities/check';
+import {CheckType} from '../../../entities/check';
 
-// Данные для создания check'а
 export interface CreateCheckRequest {
   name: string;
   type: CheckType;

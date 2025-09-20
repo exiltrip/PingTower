@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Check, CheckType } from '../../../entities/check';
+import type { Check, CheckType } from '../../../entities/check';
 import { getAllChecks, createCheck, updateCheck, deleteCheck, getCheckById } from '../api/checks';
-import { CreateCheckRequest, UpdateCheckRequest } from '../types/requests';
+import type { CreateCheckRequest, UpdateCheckRequest } from '../types/requests';
 import { getErrorMessage } from '../lib/errors';
 
 export interface UseChecksReturn {

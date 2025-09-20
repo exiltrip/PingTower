@@ -1,20 +1,11 @@
 import { api } from '../../../shared/api/privateApi';
-import { Check } from '../../../entities/check';
-import { 
+import type { Check } from '../../../entities/check';
+import type {
   CreateCheckRequest, 
   UpdateCheckRequest, 
   CreateAlertRuleRequest,
   ChecksQueryParams
 } from '../types/requests';
-import { 
-  CreateCheckResponse, 
-  UpdateCheckResponse, 
-  GetCheckResponse, 
-  GetChecksResponse,
-  ApiSuccessResponse,
-  CreateAlertRuleResponse,
-  GetAlertRulesResponse
-} from '../types/responses';
 import { handleApiCall, ValidationError as ChecksValidationError } from '../lib/errors';
 import { validateCreateCheckRequest, validateUpdateCheckRequest } from '../lib/validation';
 

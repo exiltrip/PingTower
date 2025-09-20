@@ -1,6 +1,6 @@
 import { api } from '../../../shared/api/privateApi';
-import { CheckHistoryResponse } from '../../../entities/check';
-import { GetHistoryParams } from '../types/requests';
+import type { CheckHistoryResponse } from '../../../entities/check';
+import type { GetHistoryParams } from '../types/requests';
 import { handleApiCall } from '../lib/errors';
 
 /**

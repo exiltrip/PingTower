@@ -3,7 +3,7 @@ import { Card, Form, Input, Button, Typography } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../api/auth';
-import { RegisterData, RegisterResponse } from '../models/authData';
+import type { RegisterData, RegisterResponse } from '../models/authData';
 import { useNotifier } from '../../../hooks/useSnackbar';
 
 
