@@ -298,7 +298,7 @@ const NotificationChannels: React.FC = () => {
                 <p>Отправьте следующий код нашему Telegram боту:</p>
                 <div onClick={() => {
                   navigator.clipboard.writeText(linkingCode);
-                  notify("Успешно скопировано!", "success");
+                  notify("Успешно скопировано!");
 
                 }} className="my-4 cursor-pointer p-4 bg-gray-100 text-gray-950 rounded text-2xl font-mono">
                   {linkingCode}
