@@ -35,6 +35,9 @@ importers:
       axios:
         specifier: ^1.12.2
         version: 1.12.2
+      dayjs:
+        specifier: ^1.11.18
+        version: 1.11.18
       effector:
         specifier: ^23.4.4
         version: 23.4.4
