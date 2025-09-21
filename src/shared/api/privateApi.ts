@@ -30,10 +30,8 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Если ошибка 401 и мы уже не пытаемся обновить токен
         if (error.response.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
-                // Если токен уже обновляется, ставим запрос в очередь
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
                 }).then((token) => {
@@ -59,23 +57,12 @@ axiosInstance.interceptors.response.use(
                 {headers: {
                     "Authorisation": refreshToken
                 }});
-
-                    // const { access_token, refresh_token } = response.data;
-
-                    // localStorage.setItem("access_token", access_token);
-                    // localStorage.setItem("refresh_token", refresh_token);
-
                     const accessToken = localStorage.getItem("access_token");
-                    // Устанавливаем новый токен для исходного запроса
                     originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-
-                    // Выполняем все отложенные запросы
                     processQueue(null, accessToken);
 
-                    // Повторяем исходный запрос
                     return axiosInstance(originalRequest);
             } catch (refreshError) {
-                // Если refresh не удался, очищаем токены и перенаправляем на логин
                 if (refreshError.response.status === 401) {
                     localStorage.removeItem("access_token");
                     localStorage.removeItem("refresh_token");

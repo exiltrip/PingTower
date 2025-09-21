@@ -14,7 +14,7 @@ import {
     Space,
     Radio,
     ColorPicker,
-    Divider,
+    Divider, Tag,
 } from "antd";
 import {
     LineChart,
@@ -125,44 +125,31 @@ const DeepStatisticsPage: React.FC = () => {
         "monotone"
     );
 
-    const fetchChecks = async () => {
-        try {
-            const res = await api.get("/api/v1/checks");
-            setChecks(res.data);
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    const fetchHistory = async (checkId: number) => {
+    const fetchHistory = useCallback(async (checkId: number) => {
         try {
             const res = await api.get(`/api/v1/checks/${checkId}/history`);
             setHistoryMap((prev) => ({...prev, [checkId]: res.data.data}));
         } catch (e) {
             console.error(e);
         }
-    };
+    }, []);
+
+    const fetchChecks = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await api.get("/api/v1/checks");
+            setChecks(res.data);
+            await Promise.all(res.data.map((c: any) => fetchHistory(c.id)));
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchHistory]);
 
     useEffect(() => {
         fetchChecks();
-    }, []);
-
-    useEffect(() => {
-        if (checks.length === 0) return;
-        const loadHistories = async () => {
-            setLoading(true);
-            try {
-                if (selectedCheck === "all") {
-                    await Promise.all(checks.map((c) => fetchHistory(c.id)));
-                } else if (typeof selectedCheck === "number") {
-                    await fetchHistory(selectedCheck);
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadHistories();
-    }, [checks, selectedCheck]);
+    }, [fetchChecks]);
 
     const handleCreateCheck = async (values: any) => {
         setCreating(true);
@@ -331,57 +318,6 @@ const DeepStatisticsPage: React.FC = () => {
             );
         }
 
-        const renderBaseChart = (
-            ChartComponent: any,
-            DataComponent: any,
-            strokeColor: string
-        ) => (
-            <ChartComponent {...commonProps}>
-                {commonAxisProps()}
-                {chartSettings.dynamicColoring ? (
-                    <DataComponent
-                        data={history.map((entry) => ({
-                            ...entry,
-                            color:
-                                dataKey === "latencyMs"
-                                    ? getLatencyColor(entry.latencyMs)
-                                    : getSuccessColor(entry.successRate),
-                        }))}
-                        dataKey={dataKey}
-                        strokeWidth={3}
-                        isAnimationActive={false}
-                        type={lineType}
-                        dot={({stroke, ...rest}: any) => {
-                            const color =
-                                dataKey === "latencyMs"
-                                    ? getLatencyColor(rest.payload.latencyMs)
-                                    : getSuccessColor(rest.payload.successRate);
-                            return <circle {...rest} stroke={color} fill={color} r={2}/>;
-                        }}
-                        stroke={commonDataProps.stroke}
-                    >
-                        {history.map((entry, index) => (
-                            <Cell
-                                key={`cell-${index}`}
-                                stroke={
-                                    dataKey === "latencyMs"
-                                        ? getLatencyColor(entry.latencyMs)
-                                        : getSuccessColor(entry.successRate)
-                                }
-                            />
-                        ))}
-                    </DataComponent>
-                ) : (
-                    <DataComponent
-                        {...commonDataProps}
-                        type={lineType}
-                        fill={strokeColor}
-                        dot={{r: 2}}
-                    />
-                )}
-            </ChartComponent>
-        );
-
         switch (chartSettings.type) {
             case "LineChart":
                 return (
@@ -392,6 +328,7 @@ const DeepStatisticsPage: React.FC = () => {
                             {...commonDataProps}
                             dot={{r: 1}}
                             activeDot={{r: 2}}
+                            stroke={chartSettings.dynamicColoring ? undefined : commonDataProps.stroke}
                         />
                     </LineChart>
                 );
@@ -469,7 +406,12 @@ const DeepStatisticsPage: React.FC = () => {
         return (
             <Card
                 key={check.id}
-                title={check.name}
+                title={
+                    <div className="flex items-center gap-">
+                        <span className="mr-2">{check.name}</span>
+                        <Tag>{check.type}</Tag>
+                        <Tag>{check.target}</Tag>
+                    </div>}
                 extra={
                     <div className="flex gap-2">
                         <Button type="primary" onClick={() => openEditModal(check)}>
@@ -615,11 +557,22 @@ const DeepStatisticsPage: React.FC = () => {
                                         draggableId={String(check.id)}
                                         index={index}
                                     >
-                                        {(provided) => (
+                                        {(provided, snapshot) => (
                                             <div
                                                 ref={provided.innerRef}
                                                 {...provided.draggableProps}
                                                 {...provided.dragHandleProps}
+                                                style={{
+                                                    ...provided.draggableProps.style,
+                                                    userSelect: 'none',
+                                                    cursor: 'grab',
+                                                    transition: 'all 0.2s ease-in-out',
+                                                    transform: snapshot.isDragging
+                                                        ? provided.draggableProps.style?.transform
+                                                        : '',
+                                                    opacity: snapshot.isDragging ? 0.9 : 1,
+                                                    boxShadow: snapshot.isDragging ? '0px 4px 15px rgba(0, 0, 0, 0.2)' : 'none',
+                                                }}
                                             >
                                                 {renderCheckCard(check)}
                                             </div>
