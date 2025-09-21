@@ -128,15 +128,15 @@ const ProfilePage: React.FC = () => {
         <Row gutter={[24, 24]}>
           <Col xs={24} sm={12} md={6}>
             <Statistic
-              title="Всего проверок"
-              value={stats?.totalChecks || 0}
-              prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
+              title="Активных алертов"
+              value={stats?.alertRules || 0}
+              prefix={<ExclamationCircleOutlined style={{ color: '#c41a1a' }} />}
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Statistic
               title="Активных проверок"
-              value={stats?.activeChecks || 0}
+              value={`${stats?.activeChecks || 0} / ${stats?.totalChecks || 0}`}
               prefix={<ExclamationCircleOutlined style={{ color: '#1890ff' }} />}
             />
           </Col>
