@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { 
   Card, 
   Form, 
@@ -13,18 +13,24 @@ import {
   Alert,
   InputNumber,
   Tooltip,
-  TimePicker
+  TimePicker,
+  Tabs
 } from 'antd';
 import { 
   UserOutlined, 
   SaveOutlined,
   BellOutlined,
+  MutedOutlined,
   LockOutlined,
   InfoCircleOutlined,
   SecurityScanOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone
 } from '@ant-design/icons';
+import Loading from '@/shared/ui/Loading';
+
+// Lazy load компонента сайленсинга
+const SilencingRulesManagement = React.lazy(() => import('../../silencing/ui/SilencingRulesSimple'));
 
 const { Option } = Select;
 const { Password } = Input;
@@ -108,11 +114,26 @@ const SettingsManagement: React.FC = () => {
   };
 
   const handleUpdateSettings = async (values: any) => {
+    console.log('handleUpdateSettings вызвана с данными:', values);
     setLoading(true);
     try {
+      // Имитация сохранения на сервере
+      await new Promise(resolve => setTimeout(resolve, 500));
       setGlobalSettings(values);
+      console.log('Показываем success message');
+      
+      // Пробуем разные способы показа уведомления
       message.success('Настройки успешно сохранены');
+      message.info('Тестовое уведомление');
+      
+      // Альтернативный способ
+      message.success({
+        content: 'Настройки сохранены!',
+        duration: 3,
+      });
+      
     } catch (error) {
+      console.error('Ошибка:', error);
       message.error('Ошибка сохранения настроек');
     } finally {
       setLoading(false);
@@ -239,124 +260,155 @@ const SettingsManagement: React.FC = () => {
           </Space>
         }
       >
-        <Form
-          form={settingsForm}
-          layout="vertical"
-          onFinish={handleUpdateSettings}
-          disabled={loading}
-          initialValues={globalSettings}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              name="defaultNotificationDelay"
-              label={
-                <Space>
-                  <span>Задержка уведомлений (минуты)</span>
-                  <Tooltip title="Время ожидания перед повторным уведомлением">
-                    <InfoCircleOutlined className="text-gray-400" />
-                  </Tooltip>
-                </Space>
-              }
-            >
-              <InputNumber 
-                min={0} 
-                max={60} 
-                style={{ width: '100%' }} 
-                placeholder="0 - мгновенно"
-              />
-            </Form.Item>
+        <Tabs
+          type="card"
+          className="alerts-tabs"
+          items={[
+            {
+              key: 'general',
+              label: (
+                <span>
+                  <BellOutlined className="mr-2" />
+                  Общие настройки
+                </span>
+              ),
+              children: (
+                <Form
+                  form={settingsForm}
+                  layout="vertical"
+                  onFinish={handleUpdateSettings}
+                  disabled={loading}
+                  initialValues={globalSettings}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Form.Item
+                      name="defaultNotificationDelay"
+                      label={
+                        <Space>
+                          <span>Задержка уведомлений (минуты)</span>
+                          <Tooltip title="Время ожидания перед повторным уведомлением">
+                            <InfoCircleOutlined className="text-gray-400" />
+                          </Tooltip>
+                        </Space>
+                      }
+                    >
+                      <InputNumber 
+                        min={0} 
+                        max={60} 
+                        style={{ width: '100%' }} 
+                        placeholder="0 - мгновенно"
+                      />
+                    </Form.Item>
 
-            <Form.Item
-              name="maxFailuresBeforeAlert"
-              label="Количество неудачных попыток до алерта"
-            >
-              <InputNumber 
-                min={1} 
-                max={10} 
-                style={{ width: '100%' }} 
-                placeholder="3"
-              />
-            </Form.Item>
-          </div>
+                    <Form.Item
+                      name="maxFailuresBeforeAlert"
+                      label="Количество неудачных попыток до алерта"
+                    >
+                      <InputNumber 
+                        min={1} 
+                        max={10} 
+                        style={{ width: '100%' }} 
+                        placeholder="3"
+                      />
+                    </Form.Item>
+                  </div>
 
-          <Divider orientation="left">Режим "Не беспокоить"</Divider>
-          
-          <Form.Item
-            name={['quietHours', 'enabled']}
-            label="Включить тихие часы"
-            valuePropName="checked"
-          >
-            <Switch checkedChildren="Включено" unCheckedChildren="Выключено" />
-          </Form.Item>
+                  <Divider orientation="left">Режим "Не беспокоить"</Divider>
+                  
+                  <Form.Item
+                    name={['quietHours', 'enabled']}
+                    label="Включить тихие часы"
+                    valuePropName="checked"
+                  >
+                    <Switch checkedChildren="Включено" unCheckedChildren="Выключено" />
+                  </Form.Item>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Form.Item
-              name={['quietHours', 'startTime']}
-              label="Начало тихих часов"
-            >
-              <Input type="time" placeholder="22:00" />
-            </Form.Item>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Form.Item
+                      name={['quietHours', 'startTime']}
+                      label="Начало тихих часов"
+                    >
+                      <Input type="time" placeholder="22:00" />
+                    </Form.Item>
 
-            <Form.Item
-              name={['quietHours', 'endTime']}
-              label="Окончание тихих часов"
-            >
-              <Input type="time" placeholder="08:00" />
-            </Form.Item>
-          </div>
+                    <Form.Item
+                      name={['quietHours', 'endTime']}
+                      label="Окончание тихих часов"
+                    >
+                      <Input type="time" placeholder="08:00" />
+                    </Form.Item>
+                  </div>
 
-          <Divider orientation="left">Email отчеты</Divider>
+                  <Divider orientation="left">Email отчеты</Divider>
 
-          <Form.Item
-            name="enableEmailDigest"
-            label="Получать сводные отчеты на email"
-            valuePropName="checked"
-          >
-            <Switch checkedChildren="Да" unCheckedChildren="Нет" />
-          </Form.Item>
+                  <Form.Item
+                    name="enableEmailDigest"
+                    label="Получать сводные отчеты на email"
+                    valuePropName="checked"
+                  >
+                    <Switch checkedChildren="Да" unCheckedChildren="Нет" />
+                  </Form.Item>
 
-          <Form.Item
-            name="digestFrequency"
-            label="Частота отправки отчетов"
-          >
-            <Select>
-              <Option value="daily">Ежедневно</Option>
-              <Option value="weekly">Еженедельно</Option>
-            </Select>
-          </Form.Item>
+                  <Form.Item
+                    name="digestFrequency"
+                    label="Частота отправки отчетов"
+                  >
+                    <Select>
+                      <Option value="daily">Ежедневно</Option>
+                      <Option value="weekly">Еженедельно</Option>
+                    </Select>
+                  </Form.Item>
 
-          <Form.Item
-            name="timezone"
-            label="Часовой пояс"
-          >
-            <Select showSearch placeholder="Выберите часовой пояс">
-              <Option value="Europe/Moscow">Europe/Moscow (GMT+3)</Option>
-              <Option value="Europe/London">Europe/London (GMT+0)</Option>
-              <Option value="America/New_York">America/New_York (GMT-5)</Option>
-              <Option value="Asia/Tokyo">Asia/Tokyo (GMT+9)</Option>
-              <Option value="Australia/Sydney">Australia/Sydney (GMT+11)</Option>
-            </Select>
-          </Form.Item>
+                  <Form.Item
+                    name="timezone"
+                    label="Часовой пояс"
+                  >
+                    <Select showSearch placeholder="Выберите часовой пояс">
+                      <Option value="Europe/Moscow">Europe/Moscow (GMT+3)</Option>
+                      <Option value="Europe/London">Europe/London (GMT+0)</Option>
+                      <Option value="America/New_York">America/New_York (GMT-5)</Option>
+                      <Option value="Asia/Tokyo">Asia/Tokyo (GMT+9)</Option>
+                      <Option value="Australia/Sydney">Australia/Sydney (GMT+11)</Option>
+                    </Select>
+                  </Form.Item>
 
-          <Form.Item
-            name="enableSoundNotifications"
-            label="Звуковые уведомления в браузере"
-            valuePropName="checked"
-          >
-            <Switch checkedChildren="Включено" unCheckedChildren="Выключено" />
-          </Form.Item>
+                  <Form.Item
+                    name="enableSoundNotifications"
+                    label="Звуковые уведомления в браузере"
+                    valuePropName="checked"
+                  >
+                    <Switch checkedChildren="Включено" unCheckedChildren="Выключено" />
+                  </Form.Item>
 
-          <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading}
-              icon={<SaveOutlined />}
-            >
-              Сохранить настройки
-            </Button>
-          </Form.Item>
-        </Form>
+                  <Form.Item>
+                    <Button 
+                      type="primary" 
+                      htmlType="submit" 
+                      loading={loading}
+                      icon={<SaveOutlined />}
+                    >
+                      Сохранить настройки
+                    </Button>
+                  </Form.Item>
+                </Form>
+              )
+            },
+            {
+              key: 'silencing',
+              label: (
+                <span>
+                  <MutedOutlined className="mr-2" />
+                  Сайленсинг
+                </span>
+              ),
+              children: (
+                <Suspense fallback={<Loading />}>
+                  <SilencingRulesManagement />
+                </Suspense>
+              )
+            }
+          ]}
+        />
       </Card>
 
       {/* Безопасность */}
