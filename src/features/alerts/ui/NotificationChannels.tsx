@@ -199,7 +199,7 @@ const NotificationChannels: React.FC = () => {
         loading={loading}
         rowKey="id"
         locale={{ emptyText: 'Нет настроенных каналов' }}
-        className="bg-gray-800"
+
       />
 
       {/* Модальное окно создания канала */}

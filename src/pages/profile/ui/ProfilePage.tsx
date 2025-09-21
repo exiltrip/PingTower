@@ -36,7 +36,6 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const loadProfileData = async () => {
       try {
-        // В реальном приложении здесь будет API вызов к /profile
         const mockProfile: UserProfile = {
           id: 1,
           email: 'user@example.com',
@@ -86,8 +85,7 @@ const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Заголовок профиля */}
+    <div className="p-6 flex flex-col gap-6">
       <Card>
         <div className="flex items-center mb-6">
           <Avatar 
@@ -126,7 +124,6 @@ const ProfilePage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Статистика */}
       <Card title="Статистика аккаунта">
         <Row gutter={[24, 24]}>
           <Col xs={24} sm={12} md={6}>
@@ -162,7 +159,6 @@ const ProfilePage: React.FC = () => {
         </Row>
       </Card>
 
-      {/* Детальная информация */}
       <Card title="Информация об аккаунте">
         <Descriptions column={1} bordered>
           <Descriptions.Item label="ID пользователя">
@@ -194,7 +190,6 @@ const ProfilePage: React.FC = () => {
         </Descriptions>
       </Card>
 
-      {/* Быстрые действия */}
       <Card title="Быстрые действия">
         <Space size="middle" wrap>
           <Button type="primary" onClick={() => navigate('/settings')}>

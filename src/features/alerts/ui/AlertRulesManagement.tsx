@@ -243,8 +243,8 @@ const AlertRulesManagement: React.FC = () => {
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-between items-center ">
         <div>
           <h3 className="text-lg font-semibold text-white mb-1">
             Правила алертов
