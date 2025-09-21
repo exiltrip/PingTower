@@ -3,6 +3,11 @@ https://github.com/GeliusIHe/pingtowerbackend
 
 
 
+## docker build
+
+docker build -t my-react-app .
+
+
 ### install:
 ```
 pnpm install
