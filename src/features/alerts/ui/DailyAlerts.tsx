@@ -22,7 +22,6 @@ import {
   MailOutlined
 } from '@ant-design/icons';
 import { getNotificationChannels, type NotificationChannel } from '../../notifications/api/notifications';
-// import dayjs from 'dayjs'; // Временно закомментировано до установки пакета
 
 const { Option } = Select;
 
