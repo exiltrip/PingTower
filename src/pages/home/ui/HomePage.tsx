@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Card, Spin, Alert, Space, Tooltip, Row, Col, Tag, Select, DatePicker, Divider, InputNumber } from "antd";
+import { Card, Spin, Alert, Space, Tooltip, Row, Col, Tag, Select, DatePicker, Divider, InputNumber, Button } from "antd";
 import { getStatusTimeline } from "../api/reports";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-import dayjs from "dayjs";
 
 
 const STATUS_COLORS = {
@@ -23,11 +22,12 @@ const HomePage = () => {
     const [timelineData, setTimelineData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [range, setRange] = useState("30d");
+    const [range, setRange] = useState("7d");
     const [granularity, setGranularity] = useState("hour");
     const [checkId, setCheckId] = useState(null);
     const [customRange, setCustomRange] = useState(null);
     const [maxIntervals, setMaxIntervals] = useState(granularity === "hour" ? 168 : 90);
+    const [allChecks, setAllChecks] = useState([]);
 
     const debounceRef = useRef(null);
 
@@ -37,7 +37,7 @@ const HomePage = () => {
     const loadData = async () => {
         try {
             setLoading(true);
-            const params = {
+            const params: any = {
                 granularity,
                 max_intervals: maxIntervals,
                 ...(checkId && { check_id: checkId }),
@@ -51,6 +51,9 @@ const HomePage = () => {
 
             const data = await getStatusTimeline(params);
             setTimelineData(data);
+            if (allChecks.length === 0 && data.checks) {
+                setAllChecks(data.checks);
+            }
             setError(null);
         } catch (err) {
             setError(`Ошибка загрузки данных: ${err}`);
@@ -60,15 +63,17 @@ const HomePage = () => {
     };
 
     useEffect(() => {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-            loadData();
-        }, 500);
+        // if (debounceRef.current) clearTimeout(debounceRef.current);
+        // debounceRef.current = setTimeout(() => {
+        //     loadData();
+        // }, 500);
 
-        return () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-        };
-    }, [range, granularity, checkId, customRange, maxIntervals]);
+        // return () => {
+        //     if (debounceRef.current) clearTimeout(debounceRef.current);
+        // };
+
+        loadData();
+    }, []);
 
     // Эффект для прокрутки, который срабатывает после загрузки данных
     useEffect(() => {
@@ -100,7 +105,7 @@ const HomePage = () => {
         );
     }
 
-    const checkOptions = timelineData.checks.map((check) => ({
+    const checkOptions = allChecks.map((check) => ({
         label: check.checkName,
         value: check.checkId,
     }));
@@ -189,6 +194,8 @@ const HomePage = () => {
                                     style={{ width: 80 }}
                                 />
                             </Space>
+
+                            <Button type="primary" onClick={loadData}>Применить</Button>
                         </Space>
                     </div>
 
