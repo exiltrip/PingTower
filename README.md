@@ -1,3 +1,8 @@
+backend link
+https://github.com/GeliusIHe/pingtowerbackend
+
+
+
 ### install:
 ```
 pnpm install
@@ -6,18 +11,6 @@ pnpm install
 ### запуск dev
 ```
 pnpm dev
-```
-
-### работа с api:
-
-public: 
-```
-publicApi.get("/api/public_handle")
-```
-
-private: 
-```
-api.get("/api/private_handle")
 ```
 
 
