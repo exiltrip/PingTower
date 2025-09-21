@@ -28,6 +28,7 @@ import {
   generateTelegramLinkingCode,
   type NotificationChannel
 } from '../../notifications/api/notifications';
+import {useNotifier} from "@/hooks/useSnackbar.ts";
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -39,6 +40,7 @@ const NotificationChannels: React.FC = () => {
   const [telegramLinkingVisible, setTelegramLinkingVisible] = useState(false);
   const [linkingCode, setLinkingCode] = useState<string>('');
   const [form] = Form.useForm();
+  const { notify } = useNotifier();
 
   const loadChannels = async () => {
     setLoading(true);
@@ -294,7 +296,11 @@ const NotificationChannels: React.FC = () => {
             description={
               <div>
                 <p>Отправьте следующий код нашему Telegram боту:</p>
-                <div className="my-4 p-4 bg-gray-100 rounded text-2xl font-mono">
+                <div onClick={() => {
+                  navigator.clipboard.writeText(linkingCode);
+                  notify("Успешно скопировано!", "success");
+
+                }} className="my-4 cursor-pointer p-4 bg-gray-100 text-gray-950 rounded text-2xl font-mono">
                   {linkingCode}
                 </div>
                 <p className="text-sm text-gray-600">
