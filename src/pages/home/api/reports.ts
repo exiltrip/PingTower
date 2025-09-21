@@ -11,3 +11,13 @@ export const getStatusTimeline = async (params = {}) => {
     throw err;
   }
 };
+
+export const getIncidents = async (params: any) => {
+    try {
+        const res = await api.get("/api/v1/reports/incidents", { params });
+        return res.data;
+    } catch (err) {
+        console.error("API error:", err);
+        throw err;
+    }
+};
